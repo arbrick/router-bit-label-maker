@@ -67,7 +67,7 @@ label.chk input{width:auto;margin:0}
 <body>
 <div class="wrap">
 <h1>Router bit label system</h1>
-<p class="sub">12 mm TZe tape · P-touch Cube (180 dpi) · 34 × 9 mm print area = <b>241 × 64 dots</b>. Every preview below is the exact dot grid that will print.</p>
+<p class="sub">12 mm TZe tape · P-touch Cube (180 dpi) · <span id="subLen">34</span> × 9 mm label = <b id="dotsHead">up to 240 × 64 dots</b>. Every preview below is the exact dot grid that will print.</p>
 
 <div class="grid2">
   <div class="card">
@@ -113,7 +113,7 @@ label.chk input{width:auto;margin:0}
     <div class="meta">≈ true size on tape (depends on your screen).</div>
     <div class="btns">
       <button id="savePng">Save PNG</button>
-      <select id="scale" style="width:auto"><option value="1">1× (241×64, exact)</option><option value="4" selected>4× (964×256)</option><option value="8">8× (1928×512)</option></select>
+      <select id="scale" style="width:auto"><option value="1">1×</option><option value="4" selected>4×</option><option value="8">8×</option></select>
       <button class="ghost" id="addList">Add to list</button>
       <button id="updList" style="display:none">Update entry</button>
       <button class="ghost small" id="cancelEdit" style="display:none">Stop editing</button>
@@ -475,6 +475,9 @@ function writeForm(){for(const k of["sh","kind","key","dia","cl","ol","brand","m
 function syncSettingsUI(){$("qrmode").value=S.qrmode;$("pfx").value=S.pfx;$("showId").checked=!!S.showId;$("pfxWrap").style.visibility=S.qrmode==="link"?"visible":"hidden";
   $("linkHelp").innerHTML=S.qrmode==="link"?"QR = prefix + bit ID. Specs live at that address (Kept, a wiki page, a spreadsheet…). UPPERCASE addresses use QR’s compact mode; hostnames don’t care about case, but check that your paths don’t either.":"QR holds type, Ø, cut length, overall length, shank, brand and model as text."}
 function nextId(){const n=list.map(b=>parseInt(b.id,10)).filter(x=>!isNaN(x));const cur_=parseInt(cur.id,10);const m=Math.max(0,...n);return String(m+1).padStart(3,"0")}
+// the heading and the export sizes follow the real label width, which depends on the target length
+function updateDims(){const w=$("big").width;$("subLen").textContent=S.lenMM;$("dotsHead").textContent=`up to ${budgetDots()} × 64 dots`;
+  for(const o of $("scale").options){const k=+o.value;o.textContent=`${k}× (${w*k}×${64*k}${k===1?", exact":""})`}}
 function refresh(){
   readForm();
   // In diameter mode the key value IS the cutter Ø, so mirror it and lock the field
@@ -483,7 +486,7 @@ function refresh(){
   $("dia").disabled=dm;$("diaLbl").textContent=dm?"Cutter Ø (= key)":"Cutter Ø";
   const pay=payloadFor(cur);if(document.activeElement!==$("qrtxt"))$("qrtxt").value=pay;
   const info=renderLabel($("big"),cur);if(typeof ptEstimate==="function"&&$("ptLen"))setTimeout(ptEstimate,0);
-  $("truesize").style.width=($("big").width*25.4/180)+"mm";
+  $("truesize").style.width=($("big").width*25.4/180)+"mm";updateDims();
   $("truesize").src=$("big").toDataURL();
   document.querySelectorAll(".pick").forEach(p=>p.classList.toggle("on",p.dataset.id===cur.type));
   const m=$("qrmeta");

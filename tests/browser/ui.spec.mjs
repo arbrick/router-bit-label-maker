@@ -33,6 +33,26 @@ test.describe("page", () => {
     await expect(app.getByRole("link", { name: "AGPL-3.0" })).toHaveAttribute("href", "https://www.gnu.org/licenses/agpl-3.0.html");
   });
 
+  test("the heading and export sizes show the real dot counts", async ({ app }) => {
+    const budget = await app.evaluate(() => budgetDots());
+    expect(budget).toBe(240);
+    await expect(app.locator("#dotsHead")).toHaveText("up to 240 × 64 dots");
+    await expect(app.locator("#subLen")).toHaveText("34");
+    const w = await app.evaluate(() => document.getElementById("big").width);
+    const opts = await app.locator("#scale option").allTextContents();
+    expect(opts).toEqual([`1× (${w}×64, exact)`, `4× (${w * 4}×256)`, `8× (${w * 8}×512)`]);
+  });
+
+  test("they follow a new target length", async ({ app }) => {
+    await app.fill("#ptLenMM", "40"); await app.locator("#ptLenMM").blur();
+    const budget = await app.evaluate(() => budgetDots());
+    expect(budget).toBeGreaterThan(240);
+    await expect(app.locator("#dotsHead")).toHaveText(`up to ${budget} × 64 dots`);
+    await expect(app.locator("#subLen")).toHaveText("40");
+    const w = await app.evaluate(() => document.getElementById("big").width);
+    expect(await app.locator("#scale option").first().textContent()).toBe(`1× (${w}×64, exact)`);
+  });
+
   test("has an inline icon, so the browser never asks for /favicon.ico", async ({ app }) => {
     await expect(app.locator('link[rel="icon"]')).toHaveAttribute("href", /^data:image\/svg\+xml/);
   });
