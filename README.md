@@ -45,6 +45,10 @@ These are fixed rather than settings: no feed margin, blank edges trimmed, and 2
 - **Bluetooth (experimental), on macOS:** pair the printer in System Settings first, then pick the plain **`cu.PT-P…`** entry in Chrome's chooser. If the entry reads **`cu.PT-P… - Paired`**, there is no live link: the port opens but the printer never answers ("didn't answer … 0 bytes received"). On the tested setup the link only worked right after pairing, and once a session ended the only fix was **Forget This Device** and pairing again. Disconnect/Connect in System Settings and restarting the printer didn't help. Use USB for regular printing.
 - **First print:** if it comes out mirrored or upside down, open **If the first test label prints mirrored or upside down** under the print buttons and pick the fix. The choice is remembered.
 
+## Hosted copy (GitHub Pages)
+
+Every push to `main` builds the page and publishes it to <https://arbrick.github.io/router-bit-label-maker/> through `.github/workflows/pages.yml`. It is served over HTTPS, so direct printing works from any computer without a local server or reverse proxy. Your list and settings stay in your browser's `localStorage` for that origin.
+
 ## Local development (no container)
 
 Requires Node.js 18 or newer.
