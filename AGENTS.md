@@ -149,6 +149,15 @@ Run `npm test` (about 40 s). CI runs the same suites before every deploy to GitH
 
 Orientation is not yet confirmed. Don't claim hardware behavior that hasn't been observed.
 
+## Git workflow
+
+`main` is protected: nothing lands on it except through a pull request that the repository owner approves and merges.
+
+- Work on a feature branch (`feat/...`, `fix/...`, `docs/...`, `chore/...`) and open a PR into `main`. Never commit or push to `main` directly.
+- The `test` check must pass on the PR. Run `npm test` first.
+- **Do not merge the PR, enable auto-merge, or bypass or edit the branch ruleset, and do not force-push shared branches.** Open the PR, say what it does and how it was tested, then leave the approval and merge to the owner.
+- A merge to `main` deploys to GitHub Pages automatically, after the tests pass.
+
 ## Credits and licensing
 
 - Approach and protocol knowledge come from [Ircama/PT-P300BT](https://github.com/Ircama/PT-P300BT) (Web Serial printing, chaining), [Kunkles/brother-ptouch-printer-use](https://github.com/Kunkles/brother-ptouch-printer-use) (P710BT job sequence, status, USB, pitfalls), Brother's Raster Command Reference for the PT-E550W/P750W/P710BT, and ptouch-print.
