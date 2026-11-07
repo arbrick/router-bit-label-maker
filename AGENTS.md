@@ -26,7 +26,7 @@ There is no test suite, linter or bundler. `scripts/build.mjs` does placeholder 
 src/index.html      the whole app: HTML, CSS, JS in one file (~750 lines)
 scripts/build.mjs   replaces placeholders with base64 fonts and inlined JS
 scripts/dev.mjs     tiny node:http server; sends Permissions-Policy: usb=(self), serial=(self)
-Dockerfile          node:22-alpine build stage -> nginxinc/nginx-unprivileged:1.27-alpine on 8080
+Dockerfile          node:26-alpine build stage -> nginxinc/nginx-unprivileged:1.27-alpine on 8080
 nginx.conf          serves index.html with the same Permissions-Policy header
 ```
 

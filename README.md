@@ -73,7 +73,7 @@ docker build -t router-bit-label-maker .
 docker run -d -p 8080:8080 --name router-bit-labels router-bit-label-maker
 ```
 
-The image is a two-stage build. A `node:22-alpine` stage inlines the assets, and an unprivileged `nginx-unprivileged:1.27-alpine` stage serves the single page on port 8080, with a `Permissions-Policy` header that allows `usb` and `serial`.
+The image is a two-stage build. A `node:26-alpine` stage inlines the assets, and an unprivileged `nginx-unprivileged:1.27-alpine` stage serves the single page on port 8080, with a `Permissions-Policy` header that allows `usb` and `serial`.
 
 **HTTPS is needed for printing from other machines.** Put the container behind a reverse proxy with a certificate, for example with Caddy:
 
