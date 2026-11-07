@@ -8,15 +8,23 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "node scripts/dev.mjs",
-    "start": "node scripts/dev.mjs --no-watch"
+    "start": "node scripts/dev.mjs --no-watch",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "node --test --test-concurrency=1 tests/node/",
+    "test:browser": "playwright test",
+    "screenshot": "node scripts/screenshot.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "dependencies": {
     "@fontsource/atkinson-hyperlegible-next": "5.3.0",
     "@fontsource/roboto-condensed": "5.3.0",
     "jszip": "3.10.1",
     "qrcode-generator": "1.4.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "jsqr": "1.4.0"
   }
 }

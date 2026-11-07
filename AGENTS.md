@@ -11,21 +11,27 @@ The owner prints from a **Mac**. Brother has no macOS system driver for this pri
 ## Commands
 
 ```sh
-npm install        # deps: fonts + qrcode-generator + jszip (no dev deps, no framework)
+npm install        # deps: fonts + qrcode-generator + jszip; dev deps: @playwright/test + jsqr (tests only)
 npm run build      # src/index.html -> dist/index.html (inlines fonts/libs)
-npm run dev        # build + serve http://localhost:8000 + rebuild on src/ change (PORT, HOST env vars)
+npm run dev        # build + serve http://localhost:8000 + rebuild and live-reload open tabs on src/ change (PORT, HOST, WATCH_POLL env vars)
 npm start          # serve without watching
 docker compose up -d --build   # nginx on :8080
+docker compose -f compose.dev.yaml up   # dev stack: Node 26 container running npm run dev with hot reload on :8000
+npm test           # node tests (tests/node) + browser tests (tests/browser, Playwright against installed Chrome)
+npm run screenshot # regenerate docs/screenshot.png
 ```
 
-There is no test suite, linter or bundler. `scripts/build.mjs` does placeholder string substitution and nothing else.
+There is no linter or bundler. `scripts/build.mjs` does placeholder string substitution and nothing else. Node 22+ is required; Docker, the dev stack and CI use Node 26 (current LTS).
 
 ## Layout
 
 ```
 src/index.html      the whole app: HTML, CSS, JS in one file (~750 lines)
 scripts/build.mjs   replaces placeholders with base64 fonts and inlined JS
-scripts/dev.mjs     tiny node:http server; sends Permissions-Policy: usb=(self), serial=(self)
+scripts/dev.mjs     tiny node:http server; sends Permissions-Policy: usb=(self), serial=(self); /__reload is a server-sent-events stream that makes open pages reload after a rebuild
+scripts/screenshot.mjs  regenerates docs/screenshot.png
+tests/node/         node:test: build script, dev server, repository/README/license checks
+tests/browser/      Playwright specs that drive the built page in Chrome; helpers.mjs has the mock printers
 Dockerfile          node:26-alpine build stage -> nginxinc/nginx-unprivileged:1.27-alpine on 8080
 nginx.conf          serves index.html with the same Permissions-Policy header
 ```
@@ -129,15 +135,12 @@ Error bits are decoded in `ptErrText`:
 
 ## Verifying changes
 
-There are no automated tests. The checks used so far, all run headless in Chrome (Playwright) against `dist/index.html`:
+Run `npm test` (about 40 s). CI runs the same suites before every deploy to GitHub Pages, and the Pages deploy is blocked if they fail.
 
-1. **Render a grid** of the sample labels (`SAMPLES`, via "Load sample set") at 4× and look at it.
-2. **Decode every QR** with OpenCV (`cv2.QRCodeDetector`) on 4× renders with a white border added.
-3. **Decode `ptJob` output** back into a bitmap:
-   - Parse the header bytes against the sequence above.
-   - Unpack the PackBits lines and compare them with the label canvas. Expect 0 differing dots and no ink outside pins 32–95.
-4. **Run `ptPrint` against a mock `PtLink`** that answers status requests and emits `06/01 → 01 → 06/00`. Also check the error path, e.g. byte 9 = `0x10` gives "cover open".
-5. **Check the PDF** with `qpdf --check`, render it at 180 dpi with `pdftoppm`, and compare it with the label (0 differing pixels on the 9 mm page).
+- **`tests/browser/`**: Playwright against `dist/index.html`, in the installed Google Chrome. The page is a classic script, so specs call its globals directly with `page.evaluate` (`renderLabel`, `ptJob`, `S`, `list`, ...). Every test fails on a page error or console error. Specs: `render` (label geometry, QR decoded with jsQR, payloads), `print` (protocol bytes, status parsing, connect and print flows), `ui` (form, list, JSON), `settings` (persistence, migration, calibration), `export` (PNG, ZIP, CSV, PDF).
+- **Mock printers** live in `tests/browser/helpers.mjs`: `MockLink` (a `PtLink` that answers like a PT-P710BT), `useMockSerial()` (a `navigator.serial` port on real streams), `useMockUsb()` (a `navigator.usb` device) and `parseJob()` (unpacks a job byte stream). Use them for any printing change; do not claim hardware behavior the mocks can't show.
+- **`tests/node/`**: `node --test`, run one file at a time because they share `dist/`. They check the build (placeholders, self-contained output, failure modes), the dev server (headers, live reload, polling) and repository consistency (license, Node versions across Docker/CI, README links).
+- Check legibility visually after any layout change: tests catch geometry and decoding, not whether text looks good. `npm run screenshot` is a quick way to look.
 
 **Hardware:** confirmed on a real PT-P710BT so far:
 - it prints

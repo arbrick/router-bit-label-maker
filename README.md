@@ -1,8 +1,21 @@
 # Router Bit Label Maker
 
+[![Build and deploy](https://github.com/arbrick/router-bit-label-maker/actions/workflows/pages.yml/badge.svg)](https://github.com/arbrick/router-bit-label-maker/actions/workflows/pages.yml)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+
 Standard labels for router bits, sized for **12 mm TZe tape** on Brother P-touch Cube printers. Every label shows what you need to put a bit back in the right spot (shank size, bit type, key dimension, cut length), plus a QR code with the rest. Labels can print straight from the browser to a **PT-P710BT (Cube Plus)** over USB (recommended) or Bluetooth (experimental). No Brother driver or P-touch Editor needed.
 
 The whole app is a single self-contained HTML page: fonts and libraries are inlined at build time, so it works offline and can be hosted anywhere.
+
+## Try it out
+
+**➡ [Open the app: arbrick.github.io/router-bit-label-maker](https://arbrick.github.io/router-bit-label-maker/)**
+
+No install and no account. The page runs entirely in your browser, works offline once loaded, and keeps your list on your own device. Design a label, save it as PNG, or print straight to a PT-P710BT from desktop Chrome or Edge.
+
+[![The label maker, with a roundover bit designed and the type picker open](docs/screenshot.png)](https://arbrick.github.io/router-bit-label-maker/)
+
+Press **Load sample set** in "My bits" to see sixteen finished labels.
 
 ## The label
 
@@ -49,20 +62,41 @@ These are fixed rather than settings: no feed margin, blank edges trimmed, and 2
 
 Every push to `main` builds the page and publishes it to <https://arbrick.github.io/router-bit-label-maker/> through `.github/workflows/pages.yml`. It is served over HTTPS, so direct printing works from any computer without a local server or reverse proxy. Your list and settings stay in your browser's `localStorage` for that origin.
 
-## Local development (no container)
+## Development
 
-Requires Node.js 18 or newer.
+Requires Node.js 22 or newer (the Docker image and CI use the current LTS, Node 26).
 
 ```sh
 npm install
-npm run dev      # builds dist/index.html, serves http://localhost:8000, rebuilds when src/ changes
+npm run dev      # builds dist/index.html, serves http://localhost:8000, rebuilds and reloads open pages when src/ changes
 ```
 
 - Change the port or host with `PORT=9000 npm run dev` or `HOST=0.0.0.0 npm run dev`.
 - `npm run build` only writes `dist/index.html`.
-- `npm start` serves it without watching.
+- `npm start` serves it without watching or live reload.
+- Set `WATCH_POLL=1` to poll for changes instead of using file events (for network and some container mounts).
 
 Because the dev server runs on `localhost`, direct printing works with it.
+
+### Dev stack with hot reload (Docker)
+
+```sh
+docker compose -f compose.dev.yaml up      # http://localhost:8000
+```
+
+The repository is mounted into a Node 26 container that runs `npm run dev`. Edit `src/index.html` on your machine and every open tab reloads itself after the rebuild. `localhost` is a secure origin, so USB printing works against it too. Stop it with `docker compose -f compose.dev.yaml down`.
+
+### Tests
+
+```sh
+npm test                # everything
+npm run test:node       # build script and dev server (Node's built-in test runner)
+npm run test:browser    # the app itself, in Chrome (Playwright)
+```
+
+The browser tests drive the real page in your installed **Google Chrome** (nothing to download). They cover label rendering and fitting, QR codes (decoded back with jsQR), the printer protocol byte for byte, connecting and printing against mock USB and Bluetooth printers, exports (PNG, ZIP, CSV, PDF, JSON), saved settings and the UI flows. CI runs them before every deploy.
+
+`npm run screenshot` regenerates `docs/screenshot.png` for this README.
 
 ## Deploy with Docker
 
@@ -90,10 +124,15 @@ Without HTTPS, the page still designs and exports labels; only direct printing i
 ```
 src/index.html       the app: markup, styles and all logic (fonts/libs are placeholders)
 scripts/build.mjs    inlines fonts and libraries → dist/index.html
-scripts/dev.mjs      local server + rebuild on change
+scripts/dev.mjs      local server, rebuild on change, live reload
+scripts/screenshot.mjs  regenerates docs/screenshot.png
+tests/node/          build script, dev server and repository checks
+tests/browser/       Playwright tests that drive the page in Chrome
 Dockerfile           build stage + nginx stage
 nginx.conf           static serving, Permissions-Policy header
-compose.yaml         one-service compose file
+compose.yaml         production-style stack (nginx on :8080)
+compose.dev.yaml     development stack with hot reload (:8000)
+.github/workflows/   tests, and deploy to GitHub Pages
 ```
 
 ## Credits

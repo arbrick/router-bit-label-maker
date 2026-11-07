@@ -9,8 +9,8 @@ const b64 = async (p) => (await readFile(nm(p))).toString("base64");
 // keep "</script" inside inlined libraries from closing the tag early
 const js = async (p) => (await readFile(nm(p), "utf8")).replaceAll("</script", "<\\/script");
 
-export async function build() {
-  let html = await readFile(join(root, "src", "index.html"), "utf8");
+export async function build({ src = join(root, "src", "index.html"), out = join(root, "dist") } = {}) {
+  let html = await readFile(src, "utf8");
   const swaps = {
     __FONT700__: await b64("@fontsource/roboto-condensed/files/roboto-condensed-latin-700-normal.woff2"),
     __FONT800__: await b64("@fontsource/roboto-condensed/files/roboto-condensed-latin-800-normal.woff2"),
@@ -22,8 +22,8 @@ export async function build() {
     if (!html.includes(k)) throw new Error(`placeholder ${k} missing from src/index.html`);
     html = html.split(k).join(v);
   }
-  await mkdir(join(root, "dist"), { recursive: true });
-  await writeFile(join(root, "dist", "index.html"), html);
+  await mkdir(out, { recursive: true });
+  await writeFile(join(out, "index.html"), html);
   return html.length;
 }
 

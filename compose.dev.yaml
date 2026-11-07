@@ -1,0 +1,22 @@
+# Development stack: live reload on http://localhost:8000
+#   docker compose -f compose.dev.yaml up
+# Edit src/index.html and any open page reloads itself after the rebuild.
+# WebUSB / Web Serial printing works because localhost is a secure origin.
+services:
+  dev:
+    image: node:26-alpine
+    working_dir: /app
+    command: sh -c "npm ci --omit=dev && npm run dev"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8000"
+      WATCH_POLL: "1"   # file events from host edits don't always reach a bind mount
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules   # keep the container's modules apart from the host's
+    init: true
+
+volumes:
+  node_modules:
