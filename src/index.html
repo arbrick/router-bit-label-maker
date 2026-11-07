@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Router Bit Label System — 12 mm P-touch</title>
+<style>
+@font-face{font-family:"RC";font-weight:700;src:url(data:font/woff2;base64,__FONT700__) format("woff2");}
+@font-face{font-family:"AZ";font-weight:700;src:url(data:font/woff2;base64,__FONTAZ__) format("woff2");}
+@font-face{font-family:"RC";font-weight:800;src:url(data:font/woff2;base64,__FONT800__) format("woff2");}
+:root{--bg:#f4f2ee;--card:#fff;--ink:#1d1d1b;--mute:#6b6862;--line:#dcd8d0;--acc:#c2410c;--tape:#fbfbf8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}
+h1{font:800 26px/1.15 "RC",system-ui;margin:0 0 4px;letter-spacing:.2px}
+h2{font:800 18px "RC",system-ui;margin:0 0 10px;text-transform:uppercase;letter-spacing:.6px}
+.sub{color:var(--mute);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+label{display:block;font-size:12px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.4px;margin:0 0 3px}
+input:disabled{background:#efece6;color:var(--mute);cursor:not-allowed}
+input,select,textarea{width:100%;font:15px system-ui;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+textarea{font:13px ui-monospace,monospace;resize:vertical}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.row.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+button{font:600 14px system-ui;padding:8px 12px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer}
+button.ghost{background:#fff;color:var(--ink)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.small{padding:4px 8px;font-size:12px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.zoom{background:#e9e6df;border-radius:8px;padding:14px;overflow-x:auto}
+.zoom canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;width:100%;max-width:723px;height:auto;background:#fff;box-shadow:0 0 0 1px #bbb}
+.tape{display:inline-block;background:var(--tape);height:12mm;padding:1.5mm 0;border-radius:1px;box-shadow:0 1px 3px rgba(0,0,0,.25);margin-top:10px}
+.tape img{display:block;height:9mm;width:34mm;image-rendering:pixelated}
+.meta{font-size:13px;color:var(--mute);margin-top:8px}
+.meta b{color:var(--ink)}
+.warn{color:var(--acc);font-weight:600}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.pick{border:1px solid var(--line);border-radius:6px;background:#fff;padding:5px 3px 4px;text-align:center;cursor:pointer;color:var(--ink)}
+.pick canvas{width:39px;height:48px;image-rendering:pixelated;display:block;margin:0 auto 3px}
+.pick span{display:block;font:700 11px/1.15 "RC",system-ui}
+.pick.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.lg{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff}
+.lg canvas{width:52px;height:64px;image-rendering:pixelated;flex:none;box-shadow:0 0 0 1px #e5e2db}
+.lg b{font:800 14px "RC",system-ui;display:block}
+.lg small{color:var(--mute);font-size:12px;line-height:1.3;display:block}
+.spec{width:100%;border-collapse:collapse;font-size:14px}
+.spec td,.spec th{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+.spec th{font-size:12px;text-transform:uppercase;color:var(--mute);letter-spacing:.4px}
+.list{width:100%;border-collapse:collapse;font-size:13px}
+.list td{border-bottom:1px solid var(--line);padding:5px 4px;vertical-align:middle}
+.list img{height:32px;image-rendering:pixelated;box-shadow:0 0 0 1px #ddd;display:block}
+.list tr:hover td{background:#faf8f4}
+.anno{position:relative}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 14px;border-radius:8px;font-size:14px;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+code{font:13px ui-monospace,monospace;background:#efece6;padding:1px 4px;border-radius:3px}
+ul{margin:6px 0 0;padding-left:20px}
+.qrbox{background:#f8f6f2;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px}
+label.chk{display:flex;align-items:center;gap:6px;text-transform:none;font-size:13px;color:var(--ink);font-weight:500;letter-spacing:0;cursor:pointer}
+label.chk input{width:auto;margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Router bit label system</h1>
+<p class="sub">12 mm TZe tape · P-touch Cube (180 dpi) · 34 × 9 mm print area = <b>241 × 64 dots</b>. Every preview below is the exact dot grid that will print.</p>
+
+<div class="grid2">
+  <div class="card">
+    <h2>Bit</h2>
+    <label>Bit type</label>
+    <div class="picks" id="picks"></div>
+    <div style="height:12px"></div>
+    <div class="row">
+      <div><label>Shank</label>
+        <select id="sh"><option>1/4</option><option>1/2</option><option>8mm</option><option>6mm</option><option>12mm</option><option>3/8</option><option>1/8</option></select></div>
+      <div><label>Key dim. shown as</label>
+        <select id="kind"><option value="dia">Ø diameter</option><option value="rad">R radius</option><option value="ang">∠ angle</option></select></div>
+      <div><label id="keyLbl">Key value</label><input id="key" placeholder='1/2"'></div>
+    </div>
+    <div class="row">
+      <div><label id="diaLbl">Cutter Ø</label><input id="dia" placeholder='1/2"'></div>
+      <div><label>Cut length</label><input id="cl" placeholder='1"'></div>
+      <div><label>Overall length</label><input id="ol" placeholder='2-1/2"'></div>
+    </div>
+    <div class="row">
+      <div><label>Bit ID</label><input id="bid" placeholder="ABC123"></div>
+      <div><label>Brand</label><input id="brand" placeholder="Whiteside"></div>
+      <div><label>Model #</label><input id="model" placeholder="2002"></div>
+    </div>
+    <div class="qrbox">
+      <div class="row two" style="margin-bottom:6px">
+        <div><label>QR contains</label><select id="qrmode"><option value="data">Specs (data)</option><option value="link">Link to my inventory</option></select></div>
+        <div id="pfxWrap"><label>Link prefix (all bits)</label><input id="pfx" placeholder="HTTP://BITS.LAN/B/"></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="showId"> Print bit ID on label (vertical, beside the QR)</label>
+      <div class="meta" id="linkHelp" style="margin:4px 0 0"></div>
+    </div>
+    <label>QR payload <span style="text-transform:none;font-weight:400">(auto — edit to override)</span></label>
+    <textarea id="qrtxt" rows="2"></textarea>
+    <div class="meta" id="qrmeta"></div>
+  </div>
+
+  <div class="card">
+    <h2>Label</h2>
+    <div class="zoom"><canvas id="big" width="241" height="64"></canvas></div>
+    <div class="meta">Each square = one printer dot (0.14 mm).</div>
+    <div class="tape"><img id="truesize" alt="label at approximately true size"></div>
+    <div class="meta">≈ true size on tape (depends on your screen).</div>
+    <div class="btns">
+      <button id="savePng">Save PNG</button>
+      <select id="scale" style="width:auto"><option value="1">1× (241×64, exact)</option><option value="4" selected>4× (964×256)</option><option value="8">8× (1928×512)</option></select>
+      <button class="ghost" id="addList">Add to list</button>
+      <button id="updList" style="display:none">Update entry</button>
+      <button class="ghost small" id="cancelEdit" style="display:none">Stop editing</button>
+    </div>
+    <div class="meta" id="editNote"></div>
+    <div class="meta" id="saveNote"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>My bits <span id="cnt" style="color:var(--mute);font-weight:700"></span></h2>
+  <table class="list" id="list"></table>
+  <div class="btns">
+    <button class="ghost" id="zipAll">Save all as ZIP</button>
+    <button class="ghost" id="loadSamples">Load sample set</button>
+    <button id="savePdf">Save list as PDF</button>
+    <select id="pdfPage" style="width:auto"><option value="12">PDF page 34 × 12 mm (tape)</option><option value="9">PDF page 34 × 9 mm (print area)</option></select>
+    <button class="ghost" id="saveCsv">Save list as CSV</button>
+    <button class="ghost" id="copyJson">Copy list as JSON</button>
+    <button class="ghost" id="clearList">Clear list</button>
+  </div>
+  <div class="meta">List is kept in this browser only. Use “Copy list as JSON” to back it up; paste JSON below to restore.</div>
+  <textarea id="importBox" rows="2" placeholder='Paste a saved JSON list here, then press Import'></textarea>
+  <div class="btns"><button class="ghost small" id="importBtn">Import</button></div>
+</div>
+
+<div class="card" id="printCard">
+  <h2>Print directly to the Cube</h2>
+  <div id="ptSupport" class="meta" style="margin:0 0 10px"></div>
+  <div class="btns" style="margin-top:0">
+    <button id="ptUsb">Connect USB</button>
+    <button class="ghost" id="ptBt" title="Experimental: on macOS the printer often stops answering after the first session and must be re-paired. USB is more reliable.">Connect Bluetooth (experimental)</button>
+    <button class="ghost small" id="ptDisc" style="display:none">Disconnect</button>
+  </div>
+  <div class="meta" id="ptState">Not connected.</div>
+  <div class="btns">
+    <button id="ptPrintCur" disabled>Print current label</button>
+    <button id="ptPrintList" disabled>Print whole list</button>
+    <button class="ghost" id="ptStop" style="display:none">Stop after this label</button>
+  </div>
+  <div class="row" style="margin:12px 0 4px">
+    <div><label>Label length on tape</label><div style="display:flex;align-items:center;gap:6px"><input id="ptLenMM" type="number" min="25" max="60" step="0.5" style="width:90px"> <span class="meta" style="margin:0">mm</span></div></div>
+  </div>
+  <details style="margin:2px 0 6px"><summary class="meta" style="cursor:pointer;display:inline">Calibrate length (printer adds <span id="ptExtraShow"></span> mm per end)</summary>
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap">
+      <div><label>Last printed label measured</label><div style="display:flex;align-items:center;gap:6px"><input id="ptMeasured" type="number" step="0.5" placeholder="40.6" style="width:90px"> <span class="meta" style="margin:0">mm</span></div></div>
+      <button class="ghost small" id="ptCal" type="button">Calibrate</button>
+      <button class="ghost small" id="ptCalReset" type="button">Reset to 0 mm</button>
+    </div>
+    <div class="meta" id="ptCalNote">Print a label, measure it end to end, enter the length, and press Calibrate. The design then re-fits so future labels hit your target.</div>
+  </details>
+  <div class="meta" id="ptLen" style="margin-top:0"></div>
+  <label class="chk" style="margin-top:10px"><input type="checkbox" id="ptChain" checked> Chain labels to save tape (cuts between labels, feeds only after the last)</label>
+  <details style="margin-top:8px"><summary class="meta" style="cursor:pointer;display:inline">If the first test label prints mirrored or upside down</summary>
+    <div class="row two" style="margin-top:8px"><div><label>Orientation fix</label>
+      <select id="ptOrient"><option value="normal">Normal</option><option value="rot180">Rotate 180°</option><option value="mirror">Mirror along tape</option><option value="flip">Flip across tape</option></select></div></div>
+  </details>
+  <div class="meta" id="ptLog" style="white-space:pre-wrap;font:12px ui-monospace,monospace;max-height:140px;overflow:auto;margin-top:8px"></div>
+</div>
+
+<div class="card">
+  <h2>The standard layout</h2>
+  <div class="zoom"><canvas id="spec" width="241" height="64"></canvas></div>
+  <div style="height:12px"></div>
+  <table class="spec">
+    <tr><td colspan="5" class="meta" style="border:0;padding:0 0 6px">Fitted to your label length: <span id="spW"></span>. Only the text zones change width.</td></tr>
+    <tr><th>Zone</th><th>Dots (x)</th><th>mm</th><th>Content</th><th>Why</th></tr>
+    <tr><td><b>A · Shank</b></td><td>0–51, rows 0–21</td><td>7.3 × 3.1</td><td>Black bar, shank size knocked out in white. Bar <i>width</i> also encodes size: ¼″ narrow, ½″ wide, metric medium.</td><td>Shank decides which hole the bit physically fits. Readable at a glance from a distance, even without reading the number.</td></tr>
+    <tr><td><b>B · Profile</b></td><td>0–51, rows 24–63</td><td>7.3 × 5.6</td><td>Cutter silhouette pictogram (see set below). Hollow box = bearing.</td><td>Replaces the written bit type — shape is what you scan for.</td></tr>
+    <tr><td><b>C · Key size</b></td><td>from 55, rows 0–28; narrows to fit</td><td id="spC"></td><td>The one number that tells same-type bits apart: <b>Ø</b> for straight/spiral/flush, <b>R</b> for roundover/cove/beading, <b>∠</b> for chamfer/V. Big, with stacked fractions.</td><td>Sort key #2 after type. A roundover is chosen by radius, not cutter Ø.</td></tr>
+    <tr><td><b>D · Secondary</b></td><td>from 55, rows 31–47</td><td id="spD"></td><td>Cut length (I-beam icon), plus cutter Ø when the key size is R or ∠.</td><td>Second tiebreaker (e.g. ½″ straight in 1″ vs 2″ cut length).</td></tr>
+    <tr><td><b>Bit ID</b> (orange)</td><td>16 dots, full height</td><td>2.3 × 9</td><td>#ID printed vertically, reading bottom to top, beside the QR. Optional; when it's off, C, D and E get the full 16.5 mm.</td><td>Typed fallback for a link QR, and a quick visual index without scanning.</td></tr>
+    <tr><td><b>E · Brand/model</b></td><td>from 55, rows 51–63</td><td id="spE"></td><td>Brand + model number, small caps.</td><td>For reordering; not needed for sorting.</td></tr>
+    <tr><td><b>F · QR</b></td><td>right end, 3-module gap</td><td id="spF"></td><td>QR v1–v3 at 2 dots/module (0.28 mm). <b>Specs mode:</b> type, Ø, CL, OL, shank, brand, model as text. <b>Link mode:</b> your prefix + bit ID (e.g. <code>HTTP://BITS.LAN/B/ABC123</code>), opening that bit's full record.</td><td>Everything else, scannable. v3 (29 modules) is the largest that fits 64 dots tall at 2 dots/module.</td></tr>
+  </table>
+  <div class="meta" style="margin-top:12px"><b>Sort order this layout supports:</b> shank (zone A, fastest read) → type (B) → key size (C) → cut length (D). If your storage is organized by shank first — e.g. separate ¼″ and ½″ blocks — the shank bar alone tells you which block to go to.</div>
+</div>
+
+<div class="card">
+  <h2>Pictogram set</h2>
+  <p class="meta" style="margin-top:0">Side silhouettes, shank up, at native resolution (52 × 64 dots, shown 1:1 per dot). Hollow box = bearing. Spirals show flute direction plus arrows for chip direction.</p>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div class="card">
+  <h2>Printing it from the Cube</h2>
+  <p style="margin:0 0 4px"><b>Batch, directly (Cube Plus PT-P710BT, desktop Chrome/Edge):</b> use <b>Print directly to the Cube</b> above. USB is the recommended route; Bluetooth is experimental and can need the printer re-paired between sessions.</p>
+  <ul style="margin-bottom:12px">
+    <li>The first label of a batch has ~24 mm of blank leader (the head sits that far from the cutter). With chaining on, later labels don't.</li>
+    <li>Labels are fitted to the length you set (34 mm by default): the middle text zone narrows so print + margins + the printer's own feed add up to it. Calibrate once with a measured label for accuracy.</li>
+    <li><b>Save list as PDF</b> only helps on a Windows PC with Brother's printer driver. On a Mac the printer can't be added as a system printer.</li>
+  </ul>
+  <p style="margin:0 0 4px"><b>One at a time from the phone app:</b></p>
+  <ul>
+    <li><b>Save PNG</b> on your phone (4× is the safest default — the app scales it down cleanly). In Brother <b>P-touch Design&amp;Print 2</b>, start a 12 mm label, set length to <b>34 mm</b> and margins to the smallest option, then add the image and stretch it to the full 9 mm print height.</li>
+    <li>Black-on-white or black-on-clear tape both work; the QR needs a light background, so skip white-on-black tape.</li>
+    <li>The Cube's minimum label length is 25 mm, so 34 mm is fine. The cutter wastes extra tape at the leading edge of the first label — printing several labels in one job (one per page in the app) saves tape.</li>
+    <li>Test-scan the first QR with your phone before batch printing. At 2 dots/module it scans well with most phone cameras held ~8–12 cm away; keep payloads short (≤ ~45 characters) to stay at v2 and get bigger margins.</li>
+  </ul>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>/*QRLIB*/</script>
+<script>/*ZIPLIB*/</script>
+<script>
+"use strict";
+const H=64;
+// ---------- bit type catalog ----------
+const TYPES=[
+ {id:"STR",name:"Straight",kind:"dia",note:"2-flute straight"},
+ {id:"SPU",name:"Spiral upcut",kind:"dia",note:"Chips up; ↑ arrow"},
+ {id:"SPD",name:"Spiral downcut",kind:"dia",note:"Chips down; ↓ arrow"},
+ {id:"CMP",name:"Compression",kind:"dia",note:"Up + down; arrows meet"},
+ {id:"FT",name:"Flush trim",kind:"dia",note:"Bearing at tip"},
+ {id:"SFT",name:"Spiral flush trim · up",kind:"dia",note:"Upcut spiral, bearing at tip"},
+ {id:"SFTD",name:"Spiral flush trim · down",kind:"dia",note:"Downcut spiral, bearing at tip"},
+ {id:"SFTC",name:"Spiral flush trim · comp.",kind:"dia",note:"Compression spiral, bearing at tip"},
+ {id:"PAT",name:"Pattern / template",kind:"dia",note:"Bearing by shank"},
+ {id:"SPAT",name:"Spiral pattern · up",kind:"dia",note:"Upcut spiral, bearing by shank"},
+ {id:"SPATD",name:"Spiral pattern · down",kind:"dia",note:"Downcut spiral, bearing by shank"},
+ {id:"SPATC",name:"Spiral pattern · comp.",kind:"dia",note:"Compression spiral, bearing by shank"},
+ {id:"PTR",name:"Pattern / trim",kind:"dia",note:"Bearings top + bottom"},
+ {id:"SPTR",name:"Spiral pattern/trim · up",kind:"dia",note:"Upcut spiral, 2 bearings"},
+ {id:"SPTRD",name:"Spiral pattern/trim · down",kind:"dia",note:"Downcut spiral, 2 bearings"},
+ {id:"SPTRC",name:"Spiral pattern/trim · comp.",kind:"dia",note:"Compression spiral, 2 bearings"},
+ {id:"RO",name:"Roundover",kind:"rad",note:"Concave edges, bearing"},
+ {id:"BED",name:"Beading",kind:"rad",note:"Roundover + fillet step"},
+ {id:"COV",name:"Cove",kind:"rad",note:"Convex edges, bearing"},
+ {id:"CHM",name:"Chamfer",kind:"ang",note:"Straight bevel, bearing"},
+ {id:"OG",name:"Ogee",kind:"rad",note:"S-curve, bearing"},
+ {id:"RAB",name:"Rabbeting",kind:"dia",note:"Wide cutter, small bearing"},
+ {id:"VG",name:"V-groove",kind:"ang",note:"Wide point, no bearing"},
+ {id:"ENG",name:"Engraving / V-carve",kind:"ang",note:"Narrow point"},
+ {id:"CB",name:"Core box / round nose",kind:"dia",note:"Full round end"},
+ {id:"BN",name:"Ball nose",kind:"dia",note:"Small round end, long"},
+ {id:"DT",name:"Dovetail",kind:"ang",note:"Wider at tip"},
+ {id:"KH",name:"Keyhole",kind:"dia",note:"Neck + round head"},
+ {id:"TS",name:"T-slot",kind:"dia",note:"Neck + wide flat head"},
+ {id:"SLT",name:"Slot cutter",kind:"dia",note:"Thin disc + bearing"},
+ {id:"BWL",name:"Bowl & tray",kind:"dia",note:"Flat, round corners"},
+ {id:"SRF",name:"Surfacing / spoilboard",kind:"dia",note:"Very wide, short, inserts"},
+ {id:"RP",name:"Raised panel",kind:"dia",note:"Huge Ø, shallow slope"},
+ {id:"RS",name:"Rail & stile",kind:"dia",note:"Stacked tongue/groove"},
+ {id:"OTH",name:"Other",kind:"dia",note:"Anything else"}
+];
+const TYPE=Object.fromEntries(TYPES.map(t=>[t.id,t]));
+
+// ---------- drawing helpers ----------
+function rect(c,x,y,w,h){c.fillRect(x,y,w,h)}
+function poly(c,pts){c.beginPath();c.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath();c.fill()}
+function bearing(c,cx,y,w,h){c.fillStyle="#000";rect(c,cx-w/2,y,w,h);c.fillStyle="#fff";rect(c,cx-w/2+2,y+2,w-4,h-4);c.fillStyle="#000";rect(c,cx-1,y+2,2,h-4)}
+function white(c){c.fillStyle="#fff"}function black(c){c.fillStyle="#000"}
+function stripes(c,x,y,w,h,dir,gap,ph=0){ // white diagonal stripes clipped to rect
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();white(c);c.lineWidth=2;c.strokeStyle="#fff";
+  for(let k=-h-gap+ph;k<w+h;k+=gap){c.beginPath();
+    if(dir>0){c.moveTo(x+k,y+h);c.lineTo(x+k+h*0.6,y)}else{c.moveTo(x+k,y);c.lineTo(x+k+h*0.6,y+h)}
+    c.stroke()}
+  c.restore();black(c)}
+function arrow(c,x,y1,y2){ // vertical arrow from y1 toward y2 (head at y2)
+  black(c);const d=y2>y1?1:-1;rect(c,x-1,Math.min(y1,y2),2,Math.abs(y2-y1));poly(c,[[x-4,y2-d*5],[x+4,y2-d*5],[x,y2+d*1]])}
+
+const MODE={SFT:"up",SPAT:"up",SPTR:"up",SFTD:"down",SPATD:"down",SPTRD:"down",SFTC:"cmp",SPATC:"cmp",SPTRC:"cmp"};
+function spiralCut(c,cx,y,w,h,mode){const x=cx-w/2;black(c);rect(c,x,y,w,h);const ax=cx+20;
+  if(mode==="up"){stripes(c,x,y,w,h,1,7);arrow(c,ax,y+h-2,y+2)}
+  else if(mode==="down"){stripes(c,x,y,w,h,-1,7);arrow(c,ax,y+2,y+h-2)}
+  else{const a=Math.round(h/2);stripes(c,x,y,w,a,-1,7);stripes(c,x,y+a,w,h-a,1,7,3.5);arrow(c,ax,y+1,y+a-3);arrow(c,ax,y+h-1,y+a+3)}}
+// Draw cutter profile in a 52x64 box at (ox,0). Shank occupies rows 0-21 (drawn separately).
+function drawProfile(c,id,ox){
+  const cx=ox+26,T=24;black(c);
+  // neck between shank & cutter
+  switch(id){
+  case"STR":rect(c,cx-14,T,28,37);white(c);rect(c,cx-1,T+4,2,29);black(c);break;
+  case"SPU":rect(c,cx-12,T,24,38);stripes(c,cx-12,T,24,38,1,7);arrow(c,cx+20,T+32,T+3);break;
+  case"SPD":rect(c,cx-12,T,24,38);stripes(c,cx-12,T,24,38,-1,7);arrow(c,cx+20,T+6,T+35);break;
+  case"CMP":rect(c,cx-12,T,24,38);stripes(c,cx-12,T,24,19,-1,7);stripes(c,cx-12,T+19,24,19,1,7,3.5);arrow(c,cx+20,T+1,T+15);arrow(c,cx+20,T+37,T+23);break;
+  case"FT":rect(c,cx-13,T,26,27);white(c);rect(c,cx-1,T+4,2,19);black(c);bearing(c,cx,T+29,26,10);break;
+  case"PAT":bearing(c,cx,T,26,10);rect(c,cx-13,T+12,26,27);white(c);rect(c,cx-1,T+16,2,19);black(c);break;
+  case"PTR":bearing(c,cx,T,26,9);rect(c,cx-13,T+11,26,18);white(c);rect(c,cx-1,T+14,2,12);black(c);bearing(c,cx,T+31,26,9);break;
+  case"SFT":case"SFTD":case"SFTC":spiralCut(c,cx,T,26,27,MODE[id]);bearing(c,cx,T+29,26,10);break;
+  case"SPAT":case"SPATD":case"SPATC":bearing(c,cx,T,26,10);spiralCut(c,cx,T+12,26,27,MODE[id]);break;
+  case"SPTR":case"SPTRD":case"SPTRC":bearing(c,cx,T,26,9);spiralCut(c,cx,T+11,26,18,MODE[id]);bearing(c,cx,T+31,26,9);break;
+  case"RO":{c.beginPath();c.moveTo(cx-23,T);c.lineTo(cx+23,T);c.lineTo(cx+23,T+12);
+    c.arc(cx+23,T+28,16,-Math.PI/2,Math.PI,true);c.lineTo(cx-7,T+28);c.arc(cx-23,T+28,16,0,-Math.PI/2,true);c.closePath();c.fill();
+    bearing(c,cx,T+30,14,9);break}
+  case"BED":{c.beginPath();c.moveTo(cx-23,T);c.lineTo(cx+23,T);c.lineTo(cx+23,T+10);
+    c.arc(cx+23,T+24,14,-Math.PI/2,Math.PI,true);c.lineTo(cx+9,T+29);c.lineTo(cx-9,T+29);c.lineTo(cx-9,T+24);c.arc(cx-23,T+24,14,0,-Math.PI/2,true);c.closePath();c.fill();
+    bearing(c,cx,T+31,10,8);break}
+  case"COV":{c.beginPath();c.moveTo(cx-23,T);c.lineTo(cx+23,T);c.lineTo(cx+23,T+12);
+    c.arc(cx+7,T+12,16,0,Math.PI/2,false);c.lineTo(cx-7,T+28);c.arc(cx-7,T+12,16,Math.PI/2,Math.PI,false);c.closePath();c.fill();
+    bearing(c,cx,T+30,14,9);break}
+  case"CHM":poly(c,[[cx-23,T],[cx+23,T],[cx+23,T+6],[cx+7,T+22],[cx-7,T+22],[cx-23,T+6]]);bearing(c,cx,T+25,14,9);break;
+  case"OG":{c.beginPath();c.moveTo(cx-23,T);c.lineTo(cx+23,T);c.lineTo(cx+23,T+5);
+    c.bezierCurveTo(cx+23,T+19,cx+7,T+12,cx+7,T+27);c.lineTo(cx-7,T+27);c.bezierCurveTo(cx-7,T+12,cx-23,T+19,cx-23,T+5);c.closePath();c.fill();
+    bearing(c,cx,T+29,14,9);break}
+  case"RAB":rect(c,cx-24,T,48,22);white(c);rect(c,cx-1,T+4,2,14);black(c);rect(c,cx-3,T+22,6,3);bearing(c,cx,T+25,18,10);break;
+  case"VG":poly(c,[[cx-21,T],[cx+21,T],[cx+21,T+6],[cx,T+33],[cx-21,T+6]]);break;
+  case"ENG":rect(c,cx-6,T,12,18);poly(c,[[cx-6,T+17],[cx+6,T+17],[cx+0.5,T+39],[cx-0.5,T+39]]);break;
+  case"CB":rect(c,cx-15,T,30,22);c.beginPath();c.arc(cx,T+22,15,0,Math.PI);c.fill();break;
+  case"BN":rect(c,cx-8,T,16,31);c.beginPath();c.arc(cx,T+31,8,0,Math.PI);c.fill();break;
+  case"DT":rect(c,cx-6,T,12,8);poly(c,[[cx-8,T+8],[cx+8,T+8],[cx+21,T+36],[cx-21,T+36]]);break;
+  case"KH":rect(c,cx-5,T,10,22);rect(c,cx-12,T+22,24,15);break;
+  case"TS":rect(c,cx-5,T,10,20);rect(c,cx-22,T+20,44,11);break;
+  case"SLT":rect(c,cx-4,T,8,14);rect(c,cx-25,T+14,50,7);rect(c,cx-4,T+21,8,3);bearing(c,cx,T+24,16,10);break;
+  case"BWL":{rect(c,cx-6,T,12,6);c.beginPath();c.moveTo(cx-23,T+6);c.lineTo(cx+23,T+6);c.lineTo(cx+23,T+20);c.arcTo(cx+23,T+30,cx+13,T+30,10);c.lineTo(cx-13,T+30);c.arcTo(cx-23,T+30,cx-23,T+20,10);c.closePath();c.fill();break}
+  case"SRF":rect(c,cx-7,T,14,12);rect(c,cx-25,T+12,50,12);white(c);rect(c,cx-23,T+19,6,3);rect(c,cx+17,T+19,6,3);black(c);break;
+  case"RP":rect(c,cx-5,T,10,5);poly(c,[[cx-26,T+5],[cx+26,T+5],[cx+26,T+10],[cx+8,T+20],[cx-8,T+20],[cx-26,T+10]]);bearing(c,cx,T+22,14,9);break;
+  case"RS":rect(c,cx-5,T,10,4);rect(c,cx-22,T+4,44,30);white(c);rect(c,cx-22,T+13,9,6);rect(c,cx+13,T+13,9,6);rect(c,cx-22,T+4,3,4);rect(c,cx+19,T+4,3,4);black(c);break;
+  default:{c.font='800 30px "RC"';c.textAlign="center";c.textBaseline="alphabetic";c.fillText("?",cx,T+34);c.textAlign="left"}
+  }
+}
+function shankW(sh){const s=String(sh).replace(/["″\s]/g,"");
+  if(s==="1/2"||s==="12mm"||s==="12")return 40; if(s==="1/4"||s==="6mm"||s==="6"||s==="1/8"||s==="3mm")return 24; return 32}
+function drawShank(c,sh,ox){
+  const w=shankW(sh),cx=ox+26;black(c);rect(c,cx-w/2,0,w,22);
+  white(c);const s=String(sh).replace(/["″]/g,"").trim();
+  const m=s.match(/^(\d+)\/(\d+)$/);
+  if(m){drawFrac(c,m[1],m[2],cx,19,22,true)}
+  else{const mm=s.match(/^(\d+(?:\.\d+)?)\s*mm$/i);const txt=mm?mm[1]:s; // metric: number only (whole number = mm, fraction = inch)
+    let fs=mm?20:17;c.font=`800 ${fs}px "RC"`;while(c.measureText(txt).width>w-4&&fs>9){fs--;c.font=`800 ${fs}px "RC"`}
+    c.textAlign="center";c.textBaseline="alphabetic";c.fillText(txt,cx,11+fs*0.36);c.textAlign="left"}
+  black(c)}
+// stacked diagonal fraction. if center=true, x is center; returns width
+const FR=size=>size<22?0.7:0.6;
+function fracW(c,n,d,size){c.font=`800 ${Math.round(size*FR(size))}px "RC"`;return c.measureText(n).width+c.measureText(d).width+size*0.28}
+function drawFrac(c,n,d,x,base,size,center){
+  const fs=Math.round(size*FR(size));c.font=`800 ${fs}px "RC"`;c.textBaseline="alphabetic";c.textAlign="left";
+  const nw=c.measureText(n).width,dw=c.measureText(d).width,sw=size*0.28,tw=nw+sw+dw;if(center)x=x-tw/2;
+  const top=base-size*(size<22?0.8:0.74);
+  c.fillText(n,x,top+fs*0.74);
+  // slash
+  c.save();c.lineWidth=Math.max(1.6,size*0.09);c.strokeStyle=c.fillStyle;c.beginPath();c.moveTo(x+nw+sw*0.05,base+0.5);c.lineTo(x+nw+sw*0.95,top-0.5);c.stroke();c.restore();
+  c.fillText(d,x+nw+sw,base);return tw}
+// rich text: numbers with fractions stacked. measure only if dry=true
+function rich(c,str,x,base,size,dry){
+  const toks=[];const re=/(\d+)\/(\d+)|(\d+)-(?=\d+\/\d+)|(?<=\d)\s*(mm|cm)\b|(?<=\d)(\.)(?=\d)|[^]/gi;let m,buf="";
+  const flush=()=>{if(buf){toks.push({t:buf});buf=""}};
+  while((m=re.exec(str))){if(m[1]){flush();toks.push({n:m[1],d:m[2]})}else if(m[3]){buf+=m[3];toks.push({t:buf,gap:true});buf=""}
+    else if(m[4]){flush();toks.push({u:m[4].toLowerCase()})}else if(m[5]){flush();toks.push({dot:1})}else buf+=m[0]}
+  flush();
+  let cx=x;
+  for(const k of toks){
+    if(k.n){if(!dry)drawFrac(c,k.n,k.d,cx,base,size,false);cx+=fracW(c,k.n,k.d,size)+1}
+    else if(k.dot){const d=Math.max(2,Math.round(size*0.14));if(!dry)rect(c,Math.round(cx+1),base-d,d,d);cx+=d+2}            // chunky decimal point
+    else if(k.u){const us=Math.max(9,Math.round(size*0.48));c.font=`800 ${us}px "RC"`;c.textAlign="left";c.textBaseline="alphabetic";if(!dry)c.fillText(k.u,cx+1,base);cx+=c.measureText(k.u).width+2} // small unit
+    else{c.font=`800 ${size}px "RC"`;c.textAlign="left";c.textBaseline="alphabetic";if(!dry)c.fillText(k.t,cx,base);cx+=c.measureText(k.t).width+(k.gap?size*0.12:0)}
+  }return cx-x}
+function fitRich(c,str,x,base,size,maxW,minS){let s=size;while(s>minS&&rich(c,str,x,base,s,true)>maxW)s--;rich(c,str,x,base,s,false);return s}
+function prefixGlyph(c,kind,x,base,size){ // draws Ø / R / angle; returns width
+  black(c);
+  if(kind==="rad"){c.font=`800 ${size}px "RC"`;c.fillText("R",x,base);return c.measureText("R").width+1}
+  const h=Math.round(size*0.72),w=Math.round(size*0.72);
+  const sm=size<20;c.save();c.lineWidth=sm?2:3;c.strokeStyle="#000";
+  if(kind==="ang"){c.beginPath();c.moveTo(x+w+1,base-h);c.lineTo(x+1.5,base-1.5);c.lineTo(x+w+2,base-1.5);c.stroke();c.lineWidth=2;c.beginPath();c.arc(x+1.5,base-1.5,w*0.55,-0.95,0);c.stroke()}
+  else{c.beginPath();c.arc(x+w/2+1,base-h/2,w/2-1,0,Math.PI*2);c.stroke();c.lineWidth=sm?1.8:2.4;c.beginPath();c.moveTo(x+0.5,base+0.5);c.lineTo(x+w+1.5,base-h-0.5);c.stroke()}
+  c.restore();return w+4}
+function ibeam(c,x,base,h){black(c);rect(c,x+2,base-h,2,h);rect(c,x,base-h,6,2);rect(c,x,base-2,6,2);return 8}
+// text with slashed zeros: Roboto Condensed, but every "0" comes from Atkinson Hyperlegible Next (slashed)
+function zW(c,str,w,fs){let t=0;for(const ch of str){c.font=`${ch==="0"?700:w} ${fs}px "${ch==="0"?"AZ":"RC"}"`;t+=c.measureText(ch).width}return t}
+function zText(c,str,x,y,w,fs,center){if(center)x-=zW(c,str,w,fs)/2;c.textAlign="left";for(const ch of str){c.font=`${ch==="0"?700:w} ${fs}px "${ch==="0"?"AZ":"RC"}"`;c.fillText(ch,x,y);x+=c.measureText(ch).width}}
+function threshold(c,w,h){const im=c.getImageData(0,0,w,h),d=im.data;for(let i=0;i<d.length;i+=4){const v=(d[i]+d[i+1]+d[i+2])/3<140?0:255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}c.putImageData(im,0,0)}
+function clean(s){return String(s||"").trim()}
+
+// ---------- QR ----------
+const ALNUM=/^[0-9A-Z $%*+\-./:]*$/;
+let S={qrmode:"data",pfx:"HTTP://BITS.LAN/B/",showId:true,lenMM:34,marginDots:0,padR:14,extraMM:0,trim:true,orient:"normal"};
+try{Object.assign(S,JSON.parse(localStorage.getItem("rbl-settings")||"{}"))}catch(e){}
+if(!S.cal){S.extraMM=0;S.cal=1;persistS()} // the old 1.3 mm default was measured with a 2 mm feed margin
+S.marginDots=0;S.padR=14;S.trim=true; // fixed: no feed margin (the printer keeps ~2 mm on the leading edge anyway), 2 mm of padding after the QR, blank edges trimmed
+function persistS(){try{localStorage.setItem("rbl-settings",JSON.stringify(S))}catch(e){}}
+function linkFor(b){return clean(b.id)?clean(S.pfx)+clean(b.id):""}
+function payloadFor(b){if(b.qrManual&&clean(b.qr))return b.qr;return S.qrmode==="link"?linkFor(b):autoPayload(b)}
+function autoPayload(b){
+  const p=[b.type];const f=(k,v)=>{v=clean(v).replace(/["″]/g,"").replace(/\s+/g,"");if(v)p.push(k+v)};
+  f("D",b.dia);if(b.kind==="rad")f("R",b.key);if(b.kind==="ang")f("A",b.key.replace(/°/g,""));f("CL",b.cl);f("OL",b.ol);f("SH",b.sh);
+  const id=[clean(b.brand),clean(b.model)].filter(Boolean).join(" ");if(id)p.push(id);
+  return p.join(" ").toUpperCase();
+}
+function makeQR(txt){
+  if(!txt)return null;
+  const mode=ALNUM.test(txt)?"Alphanumeric":"Byte";
+  // prefer stronger error correction while it still fits in v1–v2, then fall back to the smallest code
+  for(const ecc of["Q","M"]){for(let v=1;v<=2;v++){try{const q=qrcode(v,ecc);q.addData(txt,mode);q.make();return{q,v,ecc,mode}}catch(e){}}}
+  for(let v=1;v<=3;v++){for(const ecc of["M","L"]){try{const q=qrcode(v,ecc);q.addData(txt,mode);q.make();return{q,v,ecc,mode}}catch(e){}}}
+  return{err:true,mode};
+}
+
+// ---------- full label ----------
+function renderAt(cv,b,w){
+  // QR first: its size sets where the text block ends
+  const r=makeQR(payloadFor(b));const qs=r&&r.q?r.q.getModuleCount()*2:0;
+  const qrX=qs?w-qs:w, textR=qs?qrX-6:w;            // 6-dot (3-module) quiet zone left of the QR; tape margin is the right one
+  cv.width=w;cv.height=H;const c=cv.getContext("2d");c.imageSmoothingEnabled=false;
+  white(c);rect(c,0,0,w,H);black(c);
+  drawShank(c,b.sh,0);drawProfile(c,b.type,0);
+  const X=55,TW=Math.max(40,textR-X),bid=S.showId?clean(b.id):"",CDW=bid?TW-16:TW; // C/D/E lose 16 dots to the vertical ID
+  const kind=b.kind;let px=X;
+  const key=clean(b.key)||clean(b.dia);
+  if(key){px+=prefixGlyph(c,key===clean(b.key)?kind:"dia",X,25,26);fitRich(c,key,px,25,30,CDW-(px-X),14)}
+  let noU=false;const u=v=>noU?clean(v).replace(/\s*(mm|cm)\b/gi,""):clean(v); // drop small units on row 2 when it can't fit
+  const row2=(sz,dry)=>{let x2=X;
+    if(kind!=="dia"&&clean(b.dia)&&clean(b.key)){x2+=dry?Math.round(sz*0.72)+4:prefixGlyph(c,"dia",x2,46,sz-2);x2+=rich(c,u(b.dia),x2,46,sz,dry)+5}
+    if(clean(b.cl)){x2+=dry?8:ibeam(c,x2,46,sz-2);x2+=2;x2+=rich(c,u(b.cl),x2,46,sz,dry)}
+    return x2-X};
+  let s2=18;while(s2>12&&row2(s2,true)>CDW)s2--;if(row2(s2,true)>CDW){noU=true;s2=18;while(s2>12&&row2(s2,true)>CDW)s2--}row2(s2,false);
+  // bottom line: brand + model; if that can't fit at 9 px, model alone (the QR still carries the brand)
+  let id=[clean(b.brand),clean(b.model)].filter(Boolean).join(" ").toUpperCase();
+  if(id&&zW(c,id,700,9)>CDW&&clean(b.model))id=clean(b.model).toUpperCase();
+  if(id){let fs=13;while(zW(c,id,700,fs)>CDW&&fs>9)fs--;zText(c,id,X,62,700,fs)}
+  if(bid){white(c);rect(c,X+CDW,0,TW-CDW,H);black(c);const t="#"+bid.toUpperCase();let fs=15;while(zW(c,t,800,fs)>60&&fs>9)fs--;
+    c.save();c.translate(X+CDW+3+Math.round(fs*0.36),32);c.rotate(-Math.PI/2);c.textBaseline="alphabetic";zText(c,t,0,Math.round(fs*0.36),800,fs,true);c.restore();c.textAlign="left"}
+  white(c);rect(c,X+TW,0,w-(X+TW),H);               // clip any text overflow before the QR zone
+  threshold(c,w,H);
+  if(qs){const n=r.q.getModuleCount(),oy=Math.floor((H-qs)/2);black(c);
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(r.q.isDark(y,x))rect(c,qrX+x*2,oy+y*2,2,2)}
+  cv._lay={X,TW,CDW,qrX,qs,w};return r;
+}
+// Fit the design so the printed label (print + margins + what the printer adds) matches the target length
+function budgetDots(){return Math.floor((S.lenMM-2*(S.marginDots*25.4/180+S.extraMM))*180/25.4)}
+function cropCanvas(cv,a,b){const o=document.createElement("canvas");o.width=b-a;o.height=cv.height;o.getContext("2d").drawImage(cv,a,0,b-a,cv.height,0,0,b-a,cv.height);return o}
+function renderLabel(cv,b,opt={}){
+  if(opt.fixedW){return renderAt(cv,b,opt.fixedW)}
+  const P=S.trim?S.padR||0:0; // extra white after the QR (the right end sits closer to the cut than the left)
+  const B=Math.max(150,budgetDots()-P);let w=B+10,info,tmp=document.createElement("canvas"),out=tmp;
+  for(let k=0;k<6;k++){info=renderAt(tmp,b,w);if(!S.trim){out=tmp;break}
+    const[a,e]=ptCrop(tmp,true);out=cropCanvas(tmp,a,e);if(out.width<=B||w<160)break;w-=out.width-B}
+  cv.width=out.width+(out===tmp?0:P);cv.height=H;const c=cv.getContext("2d");white(c);rect(c,0,0,cv.width,H);c.drawImage(out,0,0);return info;
+}
+
+// ---------- UI ----------
+const $=id=>document.getElementById(id);
+let cur={id:"",type:"STR",sh:"1/2",kind:"dia",key:'1/2"',dia:'1/2"',cl:'1"',ol:'2-1/2"',brand:"Whiteside",model:"1072",qr:"",qrManual:false};
+let list=[];try{list=JSON.parse(localStorage.getItem("rbl-list")||"[]")}catch(e){}
+function persist(){try{localStorage.setItem("rbl-list",JSON.stringify(list))}catch(e){}}
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),1800)}
+
+function buildPicks(){
+  const host=$("picks");host.innerHTML="";
+  for(const t of TYPES){const b=document.createElement("button");b.className="pick";b.type="button";b.dataset.id=t.id;
+    const cv=document.createElement("canvas");cv.width=52;cv.height=64;const c=cv.getContext("2d");white(c);rect(c,0,0,52,64);
+    drawShank(c,"",0);drawProfile(c,t.id,0);threshold(c,52,64);
+    b.appendChild(cv);const s=document.createElement("span");s.textContent=t.name;b.appendChild(s);
+    b.onclick=()=>{cur.type=t.id;cur.kind=t.kind;$("kind").value=t.kind;syncKeyLbl();refresh()};host.appendChild(b)}
+}
+function buildLegend(){
+  const host=$("legend");host.innerHTML="";
+  const shanks=[["1/4","¼″ shank — narrow bar"],["8mm","Metric — medium bar, number only (8 = 8 mm)"],["1/2","½″ shank — wide bar"]];
+  for(const[s,n]of shanks){const d=document.createElement("div");d.className="lg";const cv=document.createElement("canvas");cv.width=52;cv.height=64;
+    const c=cv.getContext("2d");white(c);rect(c,0,0,52,64);drawShank(c,s,0);threshold(c,52,64);
+    d.appendChild(cv);d.insertAdjacentHTML("beforeend",`<div><b>Shank bar</b><small>${n}</small></div>`);host.appendChild(d)}
+  for(const t of TYPES){const d=document.createElement("div");d.className="lg";const cv=document.createElement("canvas");cv.width=52;cv.height=64;
+    const c=cv.getContext("2d");white(c);rect(c,0,0,52,64);drawShank(c,"",0);drawProfile(c,t.id,0);threshold(c,52,64);
+    d.appendChild(cv);d.insertAdjacentHTML("beforeend",`<div><b>${t.name}</b><small>${t.note} · key: ${t.kind==="dia"?"Ø":t.kind==="rad"?"R":"∠"} · QR ${t.id}</small></div>`);host.appendChild(d)}
+}
+function syncKeyLbl(){$("keyLbl").textContent=cur.kind==="dia"?"Diameter (Ø)":cur.kind==="rad"?"Radius (R)":"Angle (∠)";$("key").placeholder=cur.kind==="ang"?"45°":'1/4"'}
+function readForm(){for(const k of["sh","kind","key","dia","cl","ol","brand","model"])cur[k]=$(k).value;cur.id=$("bid").value}
+function writeForm(){for(const k of["sh","kind","key","dia","cl","ol","brand","model"])$(k).value=cur[k]||"";$("bid").value=cur.id||"";syncKeyLbl()}
+function syncSettingsUI(){$("qrmode").value=S.qrmode;$("pfx").value=S.pfx;$("showId").checked=!!S.showId;$("pfxWrap").style.visibility=S.qrmode==="link"?"visible":"hidden";
+  $("linkHelp").innerHTML=S.qrmode==="link"?"QR = prefix + bit ID. Specs live at that address (Kept, a wiki page, a spreadsheet…). UPPERCASE addresses use QR’s compact mode; hostnames don’t care about case, but check that your paths don’t either.":"QR holds type, Ø, cut length, overall length, shank, brand and model as text."}
+function nextId(){const n=list.map(b=>parseInt(b.id,10)).filter(x=>!isNaN(x));const cur_=parseInt(cur.id,10);const m=Math.max(0,...n);return String(m+1).padStart(3,"0")}
+function refresh(){
+  readForm();
+  // In diameter mode the key value IS the cutter Ø, so mirror it and lock the field
+  const dm=cur.kind==="dia";
+  if(dm){if(!clean(cur.key)&&clean(cur.dia)){cur.key=cur.dia;$("key").value=cur.key}cur.dia=cur.key;$("dia").value=cur.key}
+  $("dia").disabled=dm;$("diaLbl").textContent=dm?"Cutter Ø (= key)":"Cutter Ø";
+  const pay=payloadFor(cur);if(document.activeElement!==$("qrtxt"))$("qrtxt").value=pay;
+  const info=renderLabel($("big"),cur);if(typeof ptEstimate==="function"&&$("ptLen"))setTimeout(ptEstimate,0);
+  $("truesize").style.width=($("big").width*25.4/180)+"mm";
+  $("truesize").src=$("big").toDataURL();
+  document.querySelectorAll(".pick").forEach(p=>p.classList.toggle("on",p.dataset.id===cur.type));
+  const m=$("qrmeta");
+  if(!pay)m.innerHTML=S.qrmode==="link"?'<span class="warn">Link mode: give this bit an ID to make its QR.</span>':"No QR payload.";
+  else if(info&&info.err)m.innerHTML=`<span class="warn">Too long for this label (${pay.length} chars, ${info.mode}). Max ≈ 61 alphanumeric chars, or ≈ 32 if it uses lowercase/other symbols.</span>`;
+  else m.innerHTML=`QR <b>version ${info.v}</b> · ECC ${info.ecc} · ${info.mode} · ${pay.length} chars · ${info.q.getModuleCount()*2} dots = ${(info.q.getModuleCount()*2/180*25.4).toFixed(1)} mm square${info.v===3?' · <span class="warn">v3: tight quiet zone — test-scan</span>':""}`;
+}
+function pngBlob(b,scale){const cv=document.createElement("canvas");renderLabel(cv,b);if(scale==1)return new Promise(r=>cv.toBlob(r,"image/png"));
+  const o=document.createElement("canvas");o.width=cv.width*scale;o.height=H*scale;const c=o.getContext("2d");c.imageSmoothingEnabled=false;c.drawImage(cv,0,0,o.width,o.height);return new Promise(r=>o.toBlob(r,"image/png"))}
+function fname(b){return ("RB_"+b.type+"_"+[b.sh,b.key,b.brand,b.model].map(clean).filter(Boolean).join("_")).replace(/["″°]/g,"").replace(/\//g,"-").replace(/[^\w.-]+/g,"_").slice(0,80)}
+let dl=null,editIdx=null;
+async function save(filename,data){
+  if(!dl){$("saveNote").innerHTML='<span class="warn">Saving isn’t available in this view — long-press or right-click the true-size image above and choose “Save image”.</span>';return false}
+  try{await dl.save({filename,data});return true}catch(e){if(e&&e.code==="declined")return false;$("saveNote").innerHTML='<span class="warn">Save failed ('+(e&&e.code||"error")+'). Long-press / right-click the true-size image instead.</span>';return false}}
+
+function renderList(){if(typeof ptUi==="function"&&$("ptPrintList"))ptUi();
+  const t=$("list");t.innerHTML="";$("cnt").textContent=list.length?`(${list.length})`:"";
+  if(!list.length){t.innerHTML='<tr><td class="meta">No bits yet — fill in the form and press “Add to list”, or load the sample set.</td></tr>';return}
+  list.forEach((b,i)=>{const tr=document.createElement("tr");if(i===editIdx)tr.style.background="#fdf1e8";const cv=document.createElement("canvas");renderLabel(cv,b);
+    tr.innerHTML=`<td><img src="${cv.toDataURL()}" alt=""></td><td><b>${clean(b.id)?"#"+clean(b.id)+" · ":""}${TYPE[b.type]?.name||b.type}</b><br><span class="meta" style="margin:0">${[b.sh+" sh",b.key,b.brand,b.model].map(clean).filter(Boolean).join(" · ")}</span></td><td style="white-space:nowrap;text-align:right"></td>`;
+    const td=tr.lastChild;
+    const e=document.createElement("button");e.className="ghost small";e.textContent="Edit";e.onclick=()=>{cur={...b};writeForm();refresh();setEdit(i);window.scrollTo({top:0,behavior:"smooth"})};
+    const s=document.createElement("button");s.className="ghost small";s.textContent="PNG";s.style.marginLeft="4px";s.onclick=async()=>{const bl=await pngBlob(b,+$("scale").value);if(await save(fname(b)+".png",bl))toast("Saved")};
+    const d=document.createElement("button");d.className="ghost small";d.textContent="✕";d.style.marginLeft="4px";d.onclick=()=>{list.splice(i,1);persist();if(editIdx===i)setEdit(null);else{if(editIdx!==null&&editIdx>i)editIdx--;setEdit(editIdx)}};
+    td.append(e,s,d);t.appendChild(tr)})
+}
+const SAMPLES=[
+ {type:"STR",sh:"1/2",kind:"dia",key:'1/2"',dia:'1/2"',cl:'1"',ol:'2-1/2"',brand:"Whiteside",model:"1072"},
+ {type:"SPU",sh:"1/4",kind:"dia",key:'1/4"',dia:'1/4"',cl:'3/4"',ol:'2-1/2"',brand:"Whiteside",model:"RU2100"},
+ {type:"SPD",sh:"1/4",kind:"dia",key:'1/8"',dia:'1/8"',cl:'1/2"',ol:'2"',brand:"Amana",model:"46202"},
+ {type:"CMP",sh:"1/2",kind:"dia",key:'1/2"',dia:'1/2"',cl:'1-1/8"',ol:'3"',brand:"Amana",model:"46170"},
+ {type:"FT",sh:"1/4",kind:"dia",key:'1/2"',dia:'1/2"',cl:'1"',ol:'2-3/8"',brand:"Freud",model:"42-100"},
+ {type:"PTR",sh:"1/2",kind:"dia",key:'3/4"',dia:'3/4"',cl:'1"',ol:'3-1/4"',brand:"Whiteside",model:"3000"},
+ {type:"SFT",sh:"1/2",kind:"dia",key:'1/2"',dia:'1/2"',cl:'1-1/2"',ol:'3-1/2"',brand:"Whiteside",model:"RFT2100"},
+ {type:"PAT",sh:"1/2",kind:"dia",key:'3/4"',dia:'3/4"',cl:'1"',ol:'2-7/8"',brand:"Whiteside",model:"2402"},
+ {type:"RO",sh:"1/2",kind:"rad",key:'3/8"',dia:'1-1/4"',cl:'5/8"',ol:'2-1/2"',brand:"Freud",model:"34-118"},
+ {type:"RO",sh:"1/4",kind:"rad",key:'1/8"',dia:'3/4"',cl:'3/8"',ol:'2"',brand:"Freud",model:"34-104"},
+ {type:"COV",sh:"1/4",kind:"rad",key:'1/4"',dia:'1"',cl:'7/16"',ol:'2-1/8"',brand:"Freud",model:"36-104"},
+ {type:"CHM",sh:"1/2",kind:"ang",key:"45°",dia:'1-3/8"',cl:'1/2"',ol:'2-1/2"',brand:"Freud",model:"40-104"},
+ {type:"VG",sh:"1/4",kind:"ang",key:"90°",dia:'1/2"',cl:'1/4"',ol:'1-7/8"',brand:"Whiteside",model:"1500"},
+ {type:"DT",sh:"8mm",kind:"ang",key:"14°",dia:"12.7mm",cl:"13mm",ol:"55mm",brand:"Bosch",model:"84505M"},
+ {type:"RAB",sh:"1/2",kind:"dia",key:'1-3/8"',dia:'1-3/8"',cl:'1/2"',ol:'2-3/8"',brand:"Freud",model:"32-504"},
+ {type:"CB",sh:"1/4",kind:"dia",key:'1/2"',dia:'1/2"',cl:'3/8"',ol:'2"',brand:"Whiteside",model:"1802"}
+];
+
+$("savePng").onclick=async()=>{const bl=await pngBlob(cur,+$("scale").value);if(await save(fname(cur)+".png",bl))toast("Saved")};
+function formCopy(){readForm();const copy={...cur};if(!copy.qrManual)delete copy.qr;return copy}
+function dupId(copy,skip){const id=clean(copy.id);return id&&list.some((x,j)=>j!==skip&&clean(x.id).toUpperCase()===id.toUpperCase())}
+function setEdit(i){editIdx=i;const on=i!==null&&i<list.length;$("updList").style.display=on?"":"none";$("cancelEdit").style.display=on?"":"none";
+  $("addList").textContent=on?"Add as new":"Add to list";$("editNote").textContent=on?`Editing entry ${i+1}${clean(list[i].id)?" (#"+clean(list[i].id)+")":""} — “Update” saves over it, “Add as new” keeps both.`:"";renderList()}
+$("addList").onclick=()=>{const copy=formCopy();const dup=dupId(copy,-1);list.push(copy);persist();setEdit(null);
+  toast(dup?`Added — note: ID ${clean(copy.id)} is already used`:"Added to list")};
+$("updList").onclick=()=>{if(editIdx===null)return;const copy=formCopy();const dup=dupId(copy,editIdx);list[editIdx]=copy;persist();setEdit(null);
+  toast(dup?`Updated — note: ID ${clean(copy.id)} is already used`:"Entry updated")};
+$("cancelEdit").onclick=()=>setEdit(null);
+$("loadSamples").onclick=()=>{for(const s of SAMPLES){const b={...s,qrManual:false,id:nextId()};list.push(b)}persist();renderList();toast("Samples loaded")};
+$("clearList").onclick=()=>{if(!list.length)return;if($("clearList").dataset.arm){list=[];persist();setEdit(null);$("clearList").textContent="Clear list";delete $("clearList").dataset.arm}else{$("clearList").dataset.arm=1;$("clearList").textContent="Tap again to clear";setTimeout(()=>{$("clearList").textContent="Clear list";delete $("clearList").dataset.arm},2500)}};
+$("copyJson").onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(list));toast("Copied")}catch(e){$("importBox").value=JSON.stringify(list);toast("Clipboard blocked — JSON put in the box below")}};
+$("importBtn").onclick=()=>{try{const a=JSON.parse($("importBox").value);if(!Array.isArray(a))throw 0;list=a;persist();setEdit(null);toast("Imported "+a.length)}catch(e){toast("That isn't a valid list")}};
+$("zipAll").onclick=async()=>{if(!list.length)return toast("List is empty");const z=new JSZip();const sc=+$("scale").value;const seen={};
+  for(const b of list){let n=fname(b);seen[n]=(seen[n]||0)+1;if(seen[n]>1)n+="_"+seen[n];z.file(n+".png",await pngBlob(b,sc))}
+  const blob=await z.generateAsync({type:"blob"});if(await save("router-bit-labels.zip",blob))toast("Saved")};
+for(const k of["sh","key","dia","cl","ol","brand","model","bid"])$(k).addEventListener("input",refresh);
+$("qrmode").onchange=()=>{S.qrmode=$("qrmode").value;persistS();syncSettingsUI();refresh();renderList()};
+$("pfx").addEventListener("input",()=>{S.pfx=$("pfx").value;persistS();refresh()});
+$("pfx").addEventListener("change",renderList);
+$("showId").onchange=()=>{S.showId=$("showId").checked;persistS();refresh();renderList()};
+function csvCell(v){v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+// ---------- PDF export: one label per page, 1-bit image, no interpolation ----------
+async function deflate(u8){if(typeof CompressionStream==="undefined")return null;
+  const cs=new CompressionStream("deflate");const w=cs.writable.getWriter();w.write(u8);w.close();return new Uint8Array(await new Response(cs.readable).arrayBuffer())}
+function bits1(cv,k){const w=cv.width*k,h=cv.height*k,rb=Math.ceil(w/8),out=new Uint8Array(rb*h);
+  const d=cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
+  for(let y=0;y<h;y++){const sy=Math.floor(y/k);for(let x=0;x<w;x++){const sx=Math.floor(x/k);const white=d[(sy*cv.width+sx)*4]>127;if(white)out[y*rb+(x>>3)]|=0x80>>(x&7)}
+    for(let x=w;x<rb*8;x++)out[y*rb+(x>>3)]|=0x80>>(x&7)}
+  return{w,h,data:out}}
+async function buildPdf(items,pageH){
+  const mm=72/25.4,PW=34*mm,PH=pageH*mm,IH=9*mm,IY=(PH-IH)/2,K=4;
+  const enc=new TextEncoder(),parts=[],offs=[];let pos=0;
+  const push=u=>{if(typeof u==="string")u=enc.encode(u);parts.push(u);pos+=u.length};
+  const nObj=2+items.length*3;const obj=(n,body,stream)=>{offs[n]=pos;push(`${n} 0 obj\n`);push(body);if(stream){push("\nstream\n");push(stream);push("\nendstream")}push("\nendobj\n")};
+  push("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+  const kids=items.map((_,i)=>`${3+i*3} 0 R`).join(" ");
+  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2,`<< /Type /Pages /Count ${items.length} /Kids [${kids}] >>`);
+  for(let i=0;i<items.length;i++){
+    const cv=document.createElement("canvas");renderLabel(cv,items[i]);const b=bits1(cv,K);
+    const z=await deflate(b.data);const data=z||b.data;const n=3+i*3;
+    const IW=cv.width/180*72,IX=(PW-IW)/2;const content=`q ${IW.toFixed(3)} 0 0 ${IH.toFixed(3)} ${IX.toFixed(3)} ${IY.toFixed(3)} cm /Im0 Do Q`;
+    obj(n,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW.toFixed(3)} ${PH.toFixed(3)}] /Resources << /XObject << /Im0 ${n+2} 0 R >> >> /Contents ${n+1} 0 R >>`);
+    obj(n+1,`<< /Length ${content.length} >>`,enc.encode(content));
+    obj(n+2,`<< /Type /XObject /Subtype /Image /Width ${b.w} /Height ${b.h} /ColorSpace /DeviceGray /BitsPerComponent 1 /Interpolate false${z?" /Filter /FlateDecode":""} /Length ${data.length} >>`,data);
+  }
+  const xref=pos;let x=`xref\n0 ${nObj+1}\n0000000000 65535 f \n`;for(let n=1;n<=nObj;n++)x+=String(offs[n]).padStart(10,"0")+" 00000 n \n";
+  push(x);push(`trailer\n<< /Size ${nObj+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  const out=new Uint8Array(pos);let o=0;for(const p of parts){out.set(p,o);o+=p.length}return out}
+$("savePdf").onclick=async()=>{if(!list.length)return toast("List is empty — add bits first");
+  const pdf=await buildPdf(list,+$("pdfPage").value);if(await save("router-bit-labels.pdf",new Blob([pdf])))toast("Saved")};
+$("saveCsv").onclick=async()=>{if(!list.length)return toast("List is empty");
+  const head=["id","link","type_code","type","shank","key_kind","key_size","cutter_dia","cut_length","overall_length","brand","model","qr_payload"];
+  const rows=list.map(b=>[b.id,linkFor(b),b.type,TYPE[b.type]?.name||b.type,b.sh,b.kind,b.key,b.dia,b.cl,b.ol,b.brand,b.model,payloadFor(b)]);
+  const csv=[head,...rows].map(r=>r.map(csvCell).join(",")).join("\r\n");
+  if(await save("router-bits.csv",csv))toast("Saved")};
+$("kind").addEventListener("change",()=>{cur.kind=$("kind").value;syncKeyLbl();refresh()});
+$("qrtxt").addEventListener("input",()=>{cur.qr=$("qrtxt").value;cur.qrManual=cur.qr.trim()!=="";refresh()});
+$("qrtxt").addEventListener("blur",refresh);
+
+function drawSpec(){
+  const cv=$("spec");const b={...SAMPLES[6],id:"ABC123"};renderAt(cv,b,Math.max(150,budgetDots()));const L0=cv._lay,{X,TW,CDW,qrX,w}=L0;
+  const c=cv.getContext("2d");c.globalAlpha=0.28;
+  const z=[["#e11d48",0,0,52,22],["#2563eb",0,24,52,40],["#16a34a",X,0,CDW,29],["#ca8a04",X,31,CDW,17],["#ea580c",X+CDW,0,TW-CDW,64],["#9333ea",X,50,CDW,14],["#0891b2",qrX-6,0,w-qrX+6,64]];
+  for(const[col,x,y,ww,h]of z){c.fillStyle=col;c.fillRect(x,y,ww,h)}c.globalAlpha=1;
+  c.font='800 9px "RC"';const L=[["A",44,9],["B",44,60],["C",X+CDW-10,10],["D",X+CDW-10,44],["E",X+CDW-10,60],["F",w-8,9]];
+  for(const[t,x,y]of L){c.fillStyle="#fff";c.fillRect(x-2,y-8,9,10);c.fillStyle="#c2410c";c.fillText(t,x,y)}
+  const mm=d=>(d*25.4/180).toFixed(1);const set=(id,t)=>{const el=$(id);if(el)el.textContent=t};
+  set("spC",`${mm(CDW)} × 4`);set("spD",`${mm(CDW)} × 2.4`);set("spE",`${mm(CDW)} × 1.8`);set("spF",`${mm(w-qrX+6)} × 9`);
+  set("spW",`${w} dots = ${mm(w)} mm before trimming`);
+}
+// ---------- Direct printing: Brother raster protocol (PT-P710BT family), WebUSB + Web Serial ----------
+// Job sequence follows Brother's SDK order for the PT-P710BT (Raster Command Reference PT-E550W/P750W/P710BT v1.02).
+const PT_SPP="00001101-0000-1000-8000-00805f9b34fb";
+const ptSleep=ms=>new Promise(r=>setTimeout(r,ms));
+// columns that actually contain ink, plus a 2-dot white pad (keeps a little QR quiet zone)
+function ptCrop(cv,trim){const w=cv.width,h=cv.height,d=cv.getContext("2d").getImageData(0,0,w,h).data;if(!trim)return[0,w];
+  const ink=x=>{for(let y=0;y<h;y++)if(d[(y*w+x)*4]<128)return true;return false};
+  let a=0,b=w-1;while(a<b&&!ink(a))a++;while(b>a&&!ink(b))b--;return[Math.max(0,a-2),Math.min(w,b+3)]}
+function ptJob(cv,{chain,orient,trim=true,margin=14}){
+  const W0=cv.width,h=cv.height,d=cv.getContext("2d").getImageData(0,0,W0,h).data;const[x0,x1]=ptCrop(cv,trim);const w=x1-x0;
+  const out=[];const B=(...a)=>{for(const x of a)out.push(x)};
+  for(let i=0;i<100;i++)out.push(0);           // invalidate
+  B(0x1B,0x69,0x61,0x01);                       // raster mode
+  B(0x1B,0x40);                                 // initialise
+  B(0x1B,0x69,0x21,0x00);                       // status notifications on
+  B(0x1B,0x69,0x7A,0x84,0x01,0x0C,0x00,w&255,(w>>8)&255,(w>>16)&255,(w>>24)&255,0x00,0x00); // print info: 12 mm laminated, w lines, page byte 00
+  B(0x1B,0x69,0x4B,chain?0x00:0x08);            // advanced mode: chain on/off
+  B(0x1B,0x69,0x4D,0x40);                       // auto cut
+  B(0x1B,0x69,0x41,0x01);                       // cut every label
+  B(0x1B,0x69,0x64,margin&255,(margin>>8)&255); // margin (feed) at each end, dots
+  B(0x4D,0x02);                                 // TIFF (PackBits) compression
+  const rev=orient==="rot180"||orient==="mirror",flip=orient==="rot180"||orient==="flip";
+  const OFF=32; // 12 mm tape: pins 29–98 printable; 64-dot image centred → pins 32–95
+  for(let k=0;k<w;k++){const x=x0+(rev?w-1-k:k);const line=new Array(16).fill(0);
+    for(let y=0;y<h;y++){if(d[(y*W0+x)*4]<128){const p=OFF+(flip?h-1-y:y);line[p>>3]|=0x80>>(p&7)}}
+    B(0x47,17,0x00,15,...line)}                 // G n1 n2 + PackBits literal run (header 15 = 16 bytes)
+  B(0x1A);                                      // print with feed
+  return new Uint8Array(out)}
+function ptParse(b){if(!b||b.length<32||b[0]!==0x80)return null;
+  return{model:b[4],err1:b[8],err2:b[9],width:b[10],type:b[11],stype:b[18],phase:b[19]}}
+function ptErrText(s){const e=[];
+  if(s.err1&0x01)e.push("no tape");if(s.err1&0x04)e.push("cutter jam");if(s.err1&0x08)e.push("weak battery");
+  if(s.err2&0x01)e.push("wrong/replace tape");if(s.err2&0x10)e.push("cover open");if(s.err2&0x20)e.push("overheating");
+  if((s.err1||s.err2)&&!e.length)e.push(`error ${s.err1.toString(16)}/${s.err2.toString(16)}`);return e.join(", ")}
+class PtLink{ // shared buffered reader
+  constructor(){this.buf=[];this.waiters=[];this.closed=false}
+  _push(u8){for(const x of u8)this.buf.push(x);const w=this.waiters;this.waiters=[];w.forEach(f=>f())}
+  async read32(ms){const end=Date.now()+ms;
+    while(this.buf.length<32){const left=end-Date.now();if(left<=0||this.closed)return null;
+      await new Promise(r=>{const t=setTimeout(r,left);this.waiters.push(()=>{clearTimeout(t);r()})})}
+    return new Uint8Array(this.buf.splice(0,32))}
+  drain(){this.buf=[]}
+}
+class PtUsb extends PtLink{
+  async open(){this.kind="USB";
+    this.dev=await navigator.usb.requestDevice({filters:[{vendorId:0x04F9,classCode:7},{vendorId:0x04F9}]});
+    await this.dev.open();if(!this.dev.configuration)await this.dev.selectConfiguration(1);
+    let ifc=null;for(const i of this.dev.configuration.interfaces){const a=i.alternates[0];if(a.interfaceClass===7){ifc=i;break}}
+    if(!ifc)throw new Error("No printer interface on this USB device");
+    await this.dev.claimInterface(ifc.interfaceNumber);this.ifn=ifc.interfaceNumber;
+    const eps=ifc.alternates[0].endpoints;this.out=eps.find(e=>e.direction==="out").endpointNumber;this.in=eps.find(e=>e.direction==="in").endpointNumber;
+    this.name=this.dev.productName||"Brother printer";this._loop()}
+  async _loop(){while(!this.closed){try{const r=await this.dev.transferIn(this.in,64);if(r.data&&r.data.byteLength)this._push(new Uint8Array(r.data.buffer))}catch(e){if(this.closed)return;await ptSleep(50)}}}
+  async write(u8){for(let i=0;i<u8.length;i+=4096)await this.dev.transferOut(this.out,u8.subarray(i,i+4096))}
+  async close(){this.closed=true;try{await this.dev.releaseInterface(this.ifn)}catch(e){}try{await this.dev.close()}catch(e){}}
+}
+class PtSerial extends PtLink{
+  async open(){this.kind="Bluetooth";
+    this.port=await navigator.serial.requestPort({allowedBluetoothServiceClassIds:[PT_SPP]});
+    // the Bluetooth link can still be coming up when the port is picked, so retry the open a few times
+    for(let i=0;;i++){try{await this.port.open({baudRate:9600,bufferSize:4096});break}catch(e){if(i>=3)throw e;await ptSleep(2000)}}
+    this.w=this.port.writable.getWriter();this.r=this.port.readable.getReader();this.name="serial printer";this.rx=0;try{await this.port.setSignals({dataTerminalReady:true,requestToSend:true})}catch(e){}this._loop()}
+  async _loop(){try{while(!this.closed){const{value,done}=await this.r.read();if(done)break;if(value){this.rx+=value.length;console.log("pt rx",Array.from(value).map(x=>x.toString(16).padStart(2,"0")).join(" "));this._push(value)}}}catch(e){console.log("pt read loop ended:",e&&e.message||e)}}
+  async write(u8){for(let i=0;i<u8.length;i+=512){await this.w.write(u8.subarray(i,i+512));await ptSleep(25)}} // paced writes
+  async close(){this.closed=true;try{await this.r.cancel()}catch(e){}try{this.r.releaseLock();this.w.releaseLock()}catch(e){}try{await this.port.close()}catch(e){}}
+}
+let ptLink=null,ptStopReq=false,ptBusy=false,ptLast=null;
+function ptLogLine(t){const el=$("ptLog");el.textContent+=(el.textContent?"\n":"")+t;el.scrollTop=el.scrollHeight}
+async function ptStatus(show){
+  // invalidate + initialise first so the printer is in a known state; Bluetooth is slower to answer, so wait longer and retry
+  const bt=ptLink.kind==="Bluetooth",req=new Uint8Array(105);req.set([0x1B,0x40,0x1B,0x69,0x53],100);const n=bt?3:1;
+  for(let i=0;i<n;i++){const st=t=>{if(show)$("ptState").textContent=`Connected over ${ptLink.kind} — checking printer (try ${i+1}/${n}): ${t}`};
+    ptLink.drain();st("sending status request…");
+    const w=await Promise.race([ptLink.write(req).then(()=>"ok",e=>"error: "+(e.message||e)),ptSleep(4000).then(()=>"timeout")]);
+    if(w!=="ok"){ptLink.diag="write "+w;st("write "+w);await ptSleep(1500);continue}
+    st("waiting for reply…");const s=ptParse(await ptLink.read32(bt?5000:3000));
+    if(s)return s;ptLink.diag=`no reply to status request; ${ptLink.rx||0} bytes received in total`;st(`no reply (${ptLink.rx||0} bytes received)`);console.log("pt status: no reply, rx",ptLink.buf.slice());await ptSleep(1000)}
+  return null}
+function ptUi(){const on=!!ptLink;$("ptDisc").style.display=on?"":"none";$("ptPrintCur").disabled=!on||ptBusy;$("ptPrintList").disabled=!on||ptBusy||!list.length;
+  $("ptUsb").disabled=$("ptBt").disabled=on||ptBusy;$("ptStop").style.display=ptBusy?"":"none";$("ptPrintList").textContent=`Print whole list${list.length?" ("+list.length+")":""}`}
+async function ptConnect(Kind){
+  const pp=document.permissionsPolicy||document.featurePolicy;const feat=Kind===PtUsb?"usb":"serial";
+  if(pp&&pp.allowsFeature&&!pp.allowsFeature(feat)){$("ptState").innerHTML='<span class="warn">This view blocks printer access. Open the standalone copy of this page in Chrome (see the note above).</span>';return}
+  const l=new Kind();
+  try{await l.open()}catch(e){if(e&&e.name==="NotFoundError")return; $("ptState").innerHTML=`<span class="warn">Couldn't connect: ${e.message||e}</span>`;try{await l.close()}catch(_){}return}
+  ptLink=l;$("ptState").textContent=`Connected over ${l.kind} — checking printer…`;ptUi();
+  const s=await ptStatus(true);
+  if(!s){$("ptState").innerHTML=`<span class="warn">Connected over ${l.kind}, but the printer didn't answer (${l.diag||"no detail"}). Make sure it's on and awake, and that P-touch Editor / the phone app are closed.</span>`;try{await l.close()}catch(_){}ptLink=null;ptUi();return}
+  const err=ptErrText(s);const tape=s.width?`${s.width} mm tape`:"no tape";
+  $("ptState").innerHTML=`Connected over ${l.kind} · model code 0x${s.model.toString(16)} · ${tape}`+(err?` · <span class="warn">${err}</span>`:"")+(s.width&&s.width!==12?' · <span class="warn">labels are designed for 12 mm tape</span>':"")}
+async function ptDisconnect(){if(ptLink){await ptLink.close();ptLink=null}$("ptState").textContent="Not connected.";ptUi()}
+async function ptPrintOne(b,chain){
+  const s=await ptStatus();if(!s)throw new Error("printer didn't answer the status request");
+  const err=ptErrText(s);if(err)throw new Error(err);if(s.width&&s.width!==12)throw new Error(`${s.width} mm tape loaded — these labels need 12 mm`);
+  const cv=document.createElement("canvas");renderLabel(cv,b);
+  ptLink.drain();await ptLink.write(ptJob(cv,{chain,orient:$("ptOrient").value,trim:false,margin:S.marginDots}));
+  ptLast={imgMM:cv.width*25.4/180,marginDots:S.marginDots};
+  // wait for "printing completed" (type 0x01); Bluetooth may not report it, so fall back to a timed wait
+  const end=Date.now()+(ptLink.kind==="USB"?30000:12000);let started=false,done=false;
+  while(Date.now()<end){const r=ptParse(await ptLink.read32(end-Date.now()));if(!r)break;
+    if(r.stype===0x02)throw new Error(ptErrText(r)||"printer reported an error");
+    if(r.stype===0x06&&r.phase===0x01)started=true;
+    if(r.stype===0x01){done=true;break}}
+  if(!done&&ptLink.kind==="USB")throw new Error(started?"printing didn't report completion":"printer accepted the job but never started");
+  if(!done)await ptSleep(4000);
+  await ptSleep(1000);await ptLink.write(new Uint8Array([0x1B,0x69,0x61,0xFF]));await ptSleep(300);return done}
+async function ptPrint(items){
+  if(!ptLink||ptBusy||!items.length)return;ptBusy=true;ptStopReq=false;ptUi();$("ptLog").textContent="";
+  try{
+    for(let i=0;i<items.length;i++){
+      const b=items[i],name=[clean(b.id)&&"#"+clean(b.id),TYPE[b.type]?.name||b.type,clean(b.key)].filter(Boolean).join(" ");
+      const last=i===items.length-1||ptStopReq;const chain=$("ptChain").checked&&!last;
+      ptLogLine(`${i+1}/${items.length} ${name} — printing…`);
+      const ok=await ptPrintOne(b,chain);
+      ptLogLine(`   ${ok?"done":"sent (no completion report over Bluetooth)"}`);
+      if(ptStopReq&&!last){ptLogLine("Stopped. The last label printed is fed out and cut.");break}
+      if(ptStopReq)break}
+    if(!ptStopReq)toast(items.length>1?"All labels printed":"Label printed")
+  }catch(e){ptLogLine("✕ "+(e.message||e));$("ptState").innerHTML=`<span class="warn">Print failed: ${e.message||e}</span>`}
+  finally{ptBusy=false;ptUi()}}
+function ptEstimate(){const el=$("ptLen");if(!el)return;readForm();const cv=document.createElement("canvas");renderLabel(cv,cur);
+  const img=cv.width*25.4/180,m=S.marginDots*25.4/180,tot=img+2*(m+S.extraMM);$("ptExtraShow").textContent=S.extraMM.toFixed(1);
+  el.innerHTML=`Current label: ${img.toFixed(1)} mm of print + ~${S.extraMM.toFixed(1)} mm printer feed at each end ≈ <b>${tot.toFixed(1)} mm</b>`+(tot>S.lenMM+0.6?` <span class="warn">— can't squeeze below this without dropping content</span>`:"")+`.`}
+function ptFitChanged(){persistS();refresh();renderList();ptEstimate();drawSpec()}
+function ptInitUi(){
+  const usb="usb" in navigator,ser="serial" in navigator;const inFrame=window.top!==window.self;
+  let msg=[];
+  if(!usb&&!ser)msg.push('<span class="warn">This browser can’t talk to the printer. Use desktop Chrome or Edge.</span>');
+  else{msg.push(`Uses Chrome’s ${usb?"WebUSB":""}${usb&&ser?" and ":""}${ser?"Web Serial":""} to send Brother’s raster commands straight to a PT-P710BT (Cube Plus). No driver or P-touch Editor needed — close those apps first, since the printer accepts one connection.`);
+    if(!ser)$("ptBt").style.display="none";if(!usb)$("ptUsb").style.display="none"}
+  if(inFrame)msg.push('<b>Inside Claude, printer access is probably blocked.</b> Use the standalone copy of this page: open it from <code>http://localhost</code> (e.g. <code>python3 -m http.server</code> in its folder) or your own HTTPS server — browsers only allow USB/serial access from a secure origin, and <code>file://</code> won’t work. Bring your list across with “Copy list as JSON” → Import.');
+  $("ptSupport").innerHTML=msg.join("<br>");
+  $("ptOrient").value=S.orient||"normal";$("ptOrient").onchange=()=>{S.orient=$("ptOrient").value;persistS()};
+  $("ptLenMM").value=S.lenMM;
+  $("ptLenMM").onchange=()=>{const v=parseFloat($("ptLenMM").value);if(v>=25&&v<=60){S.lenMM=v;ptFitChanged()}else $("ptLenMM").value=S.lenMM};
+  $("ptCal").onclick=()=>{const meas=parseFloat($("ptMeasured").value);if(!(meas>10)){toast("Enter the measured length in mm");return}
+    const ref=ptLast||(()=>{const cv=document.createElement("canvas");renderLabel(cv,cur);return{imgMM:cv.width*25.4/180,marginDots:S.marginDots}})();
+    const ex=(meas-ref.imgMM-2*ref.marginDots*25.4/180)/2;if(!(ex>=-2&&ex<=8)){toast("That measurement doesn't fit — check it");return}
+    S.extraMM=Math.round(ex*10)/10;$("ptCalNote").textContent=`Calibrated from ${ptLast?"your last print":"the current label"}: printer adds ${S.extraMM.toFixed(1)} mm per end.`;ptFitChanged()};
+  $("ptCalReset").onclick=()=>{S.extraMM=0;ptFitChanged()};
+  ptEstimate();
+  $("ptUsb").onclick=()=>ptConnect(PtUsb);$("ptBt").onclick=()=>ptConnect(PtSerial);$("ptDisc").onclick=ptDisconnect;
+  $("ptPrintCur").onclick=()=>{readForm();ptPrint([{...cur}])};$("ptPrintList").onclick=()=>ptPrint(list.slice());
+  $("ptStop").onclick=()=>{ptStopReq=true;ptLogLine("Stopping after this label…")};
+  addEventListener("pagehide",()=>{if(ptLink)ptLink.close()}); // release the port on refresh/close
+  if(usb)navigator.usb.addEventListener("disconnect",e=>{if(ptLink&&ptLink.dev===e.device){ptLink.closed=true;ptLink=null;$("ptState").textContent="Printer disconnected.";ptUi()}});
+  ptUi()}
+
+async function init(){
+  try{await Promise.all([document.fonts.load('700 13px "AZ"'),document.fonts.load('700 13px "RC"'),document.fonts.load('800 20px "RC"')])}catch(e){}
+  syncSettingsUI();writeForm();buildPicks();ptInitUi();buildLegend();refresh();renderList();drawSpec();
+  if(window.claude&&claude.use){claude.use("downloads").then(d=>{dl=d;if(!d)$("saveNote").textContent="Tip: long-press or right-click the true-size image to save it."}).catch(()=>{})}
+  else $("saveNote").textContent="Tip: long-press or right-click the true-size image to save it.";
+}
+init();
+</script>
+</body>
+</html>

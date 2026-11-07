@@ -1,0 +1,22 @@
+{
+  "name": "router-bit-label-maker",
+  "version": "1.0.0",
+  "description": "Standard 12 mm labels for router bits, with pictograms, QR codes and direct printing to Brother P-touch Cube printers from the browser.",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/dev.mjs",
+    "start": "node scripts/dev.mjs --no-watch"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@fontsource/atkinson-hyperlegible-next": "5.3.0",
+    "@fontsource/roboto-condensed": "5.3.0",
+    "jszip": "3.10.1",
+    "qrcode-generator": "1.4.4"
+  }
+}

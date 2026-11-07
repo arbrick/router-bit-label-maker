@@ -1,0 +1,7 @@
+services:
+  router-bit-labels:
+    build: .
+    image: router-bit-label-maker:latest
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
